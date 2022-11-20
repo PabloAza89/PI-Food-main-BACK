@@ -9,7 +9,7 @@ const API_KEY = API_KEY1;
 const NUMBER = 3;
 
 const { Recipes , Diets , Op } = require('../db.js'); 
-let toAvoidKey = require('../../../toAvoidKey');
+let toAvoidKey = require('../../toAvoidKey');
 
 const router = Router();
 
