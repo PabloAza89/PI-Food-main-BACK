@@ -9,7 +9,8 @@ const recipe = {
   title: "Food title",
   summary: "Food summary",
   healthScore: 100,
-  analyzedInstructions: "Food instructions"
+  analyzedInstructions: "Food instructions",
+  diets: ["Vegan", "Primal"]
 };
 
 describe('Recipes route', () => {

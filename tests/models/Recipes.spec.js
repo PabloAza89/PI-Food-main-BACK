@@ -14,7 +14,8 @@ describe('Recipes Model', () => {
           title: "Food title",
           summary: null,
           healthScore: 100,
-          analyzedInstructions: "Food instructions"
+          analyzedInstructions: "Food instructions",
+          diets: ["Vegan", "Primal"]
         })
         .then(() => done(new Error('It requires that "Title" or "Summary" or "Health Score" or "Instructions" be valid')))
         .catch(() => done())
@@ -24,7 +25,8 @@ describe('Recipes Model', () => {
           title: "Food title",
           summary: "Food summary",
           healthScore: 100,
-          analyzedInstructions: "Food instructions"
+          analyzedInstructions: "Food instructions",
+          diets: ["Vegan", "Primal"]
         })
         .then(() => done())
         .catch(() => done(new Error('It requires that "Title" or "Summary" or "Health Score" or "Instructions" be valid')))
