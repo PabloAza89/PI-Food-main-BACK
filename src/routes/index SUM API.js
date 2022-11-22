@@ -39,7 +39,7 @@ router.get('/recipes(|/:id)', async (req, res) => {
                 attributes: ['title'],
                 through: { attributes: [] }
             }]  
-        }).catch(function(e){ console.log('NOT FOUND IN DB.. SCRIPT CONTINUED HANDLER : "foundInDB != null" ;)') }); 
+        }).catch(function(e){ console.log('NOT FOUND IN DB.. SCRIPT CONTINUED HANDLER : "foundInDB != null"') }); 
 
         let allApiResultsHelper = await allApiResults()
             
