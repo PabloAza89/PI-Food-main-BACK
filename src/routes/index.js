@@ -17,8 +17,8 @@ const router = Router();
 
 let allApiResults = async () => {
     let apiRawData = await axios.get(`https://api.spoonacular.com/recipes/complexSearch?apiKey=f02bdac78602401eb4a22dc35033d573&number=3&addRecipeInformation=true`)
-    .then(result => {return result.json()})
-    return await apiRawData.data.results.map(e => {
+    return await apiRawData.data.results
+/*     return await apiRawData.data.results.map(e => {
         return {
             id: e.id,
             title: e.title,
@@ -34,7 +34,7 @@ let allApiResults = async () => {
                 }),
             dishTypes: e.dishTypes
         }
-    })
+    }) */
 }
 
 router.get('/recipes', async (req, res) => {
@@ -75,7 +75,8 @@ router.get('/recipes', async (req, res) => {
 
         let allApiResultsHelper = await allApiResults()
         const apiFilteredResult = req.query.title?allApiResultsHelper.filter(e => e.title.toLowerCase().includes(req.query.title.toLowerCase())):allApiResultsHelper;
-        return res.status(200).send(arrayForDB.concat(apiFilteredResult))
+        return res.status(200).send(allApiResultsHelper)
+        //return res.status(200).send(arrayForDB.concat(apiFilteredResult))
     }
     catch (e) {
         if (e.code === 'ERR_BAD_REQUEST') res.status(402).send('API_KEY ERROR... PLEASE, UPDATE THE API_KEY !')
