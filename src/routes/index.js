@@ -1,4 +1,4 @@
-// INDEX SUMMARIZED WITH JSON
+// INDEX CLASSIC WITH API
 const { Router } = require('express');
 // Importar todos los routers;
 // Ejemplo: const authRouter = require('./auth.js');
@@ -9,7 +9,6 @@ const API_KEY = API_KEY1;
 const NUMBER = 3;
 
 const { Recipes , Diets , Op } = require('../db.js'); 
-let toAvoidKey = require('../../toAvoidKey');
 
 const router = Router();
 
@@ -17,7 +16,8 @@ const router = Router();
 // Ejemplo: router.use('/auth', authRouter);
 
 let allApiResults = async () => {
-    return await toAvoidKey.results.map(e => {
+    const apiRawData = await axios.get(`https://api.spoonacular.com/recipes/complexSearch?apiKey=${API_KEY}&number=${NUMBER}&addRecipeInformation=true`);
+    return apiRawData.data.results.map(e => {
         return {
             id: e.id,
             title: e.title,
@@ -30,53 +30,95 @@ let allApiResults = async () => {
                 if ((e.indexOf(e) !== e.length - 1)) {
                     return e.split(" ").map(e => e[0].toUpperCase() + e.slice(1)).join(" ")
                 } else return e.split(" ").map(e => e[0].toUpperCase() + e.slice(1)).join(" ")
-                }), 
+                }),
             dishTypes: e.dishTypes
         }
     })
 }
 
-router.get('/recipes(|/:id)', async (req, res) => {
+router.get('/recipes', async (req, res) => {
+    const { title } = req.query;
+    
+    function ifTitleExists () {
+        return req.query.title ? { title: {[Op.like]: `%${req.query.title.toLowerCase()}%`}} : {}        
+    }
+
     try {
-        let foundInDB  = await Recipes.findAll({
-            where: req.query.title? { title: {[Op.like]: `%${req.query.title.toLowerCase()}%`}} : req.params.id ? { id: req.params.id } : {},
+        const searchDBRecipes = await Recipes.findAll({
+            where: 
+            ifTitleExists()
+            ,
             include: [{
                 model: Diets,
                 attributes: ['title'],
-                through: { attributes: [] }
-            }]  
-        }).catch(function(e){ console.log('NOT FOUND IN DB.. SCRIPT CONTINUED HANDLER : "foundInDB != null"') }); 
+                through: {
+                    attributes: []
+                }
+            }]
+        })
+
+        let dietsArray = searchDBRecipes.map(e => e.Diets).map(e => e.map(e => e.title))
+        
+        let arrayForDB = []
+
+        dietsArray.map(e => {
+            arrayForDB.push({
+                id: searchDBRecipes[dietsArray.indexOf(e)].id,
+                title: searchDBRecipes[dietsArray.indexOf(e)].title,
+                summary: searchDBRecipes[dietsArray.indexOf(e)].summary,
+                healthScore: searchDBRecipes[dietsArray.indexOf(e)].healthScore,
+                analyzedInstructions: searchDBRecipes[dietsArray.indexOf(e)].analyzedInstructions,            
+                diets: e
+            })
+        })
 
         let allApiResultsHelper = await allApiResults()
-            
-        if (foundInDB != null) {
-            let dietsArray = foundInDB.map(e => e.Diets).map(e => e.map(e => e.title));
-            let arrayDB = []
-
-            dietsArray.map(e => {
-                arrayDB.push({
-                    id: foundInDB[dietsArray.indexOf(e)].id,
-                    title: foundInDB[dietsArray.indexOf(e)].title,
-                    summary: foundInDB[dietsArray.indexOf(e)].summary,
-                    healthScore: foundInDB[dietsArray.indexOf(e)].healthScore,
-                    analyzedInstructions: foundInDB[dietsArray.indexOf(e)].analyzedInstructions,
-                    diets: e
-                })
-            })
-                    
-            const apiFilteredResult = req.query.title?allApiResultsHelper.filter(e => e.title.toLowerCase().includes(req.query.title.toLowerCase())): req.params.id ? allApiResultsHelper.filter(e => e.id === parseInt(req.params.id)) : allApiResultsHelper;
-            if (apiFilteredResult[0] === undefined && arrayDB[0] === undefined) return res.status(400).send('THERE ARE NOT RECIPES BY THAT NAME.. :(')
-            return res.status(200).send(arrayDB.concat(apiFilteredResult))
-        } else {
-            if (parseInt(req.params.id).toString() === req.params.id.toString()) {
-                if (allApiResultsHelper.filter(e => e.id === parseInt(req.params.id))[0] === undefined) return res.status(400).send('THERE ARE NOT RECIPES BY THAT ID.. :(')
-                else return res.status(200).send(allApiResultsHelper.filter(e => e.id === parseInt(req.params.id))) 
-                
-            } else return res.status(400).send('THERE ARE NOT RECIPES BY THAT ID.. :(')
-        } 
-    } catch(e) {
+        const apiFilteredResult = req.query.title?allApiResultsHelper.filter(e => e.title.toLowerCase().includes(req.query.title.toLowerCase())):allApiResultsHelper;
+        return res.status(200).send(arrayForDB.concat(apiFilteredResult))
+    }
+    catch (e) {
         if (e.code === 'ERR_BAD_REQUEST') res.status(402).send('API_KEY ERROR... PLEASE, UPDATE THE API_KEY !')
-        else res.status(400).send('THERE ARE NOT RECIPES BY THAT TITLE OR ID..')
+        else res.send(e.code)
+    }
+});
+
+router.get('/recipes/:id', async (req, res) => {
+    const { id } = req.params;
+    var findByIDinDB;
+ 
+    try {
+        if (true) {
+            let allApiResultsHelper = await allApiResults()
+            const apiFilteredResult = allApiResultsHelper.filter(e => e.id === parseInt(id));
+
+            if (apiFilteredResult[0] === undefined) {
+                findByIDinDB = await Recipes.findByPk(id, {
+                    include: [{
+                        model: Diets,
+                        attributes: ['title'],
+                        through: {
+                          attributes: []
+                        }
+                      }]
+                })
+                let dietsArray = findByIDinDB.Diets.map(e => e.title)
+                let modifiedDBObj = {
+                    id: findByIDinDB.id,
+                    title: findByIDinDB.title,
+                    summary: findByIDinDB.summary,
+                    healthScore: findByIDinDB.healthScore,
+                    analyzedInstructions: findByIDinDB.analyzedInstructions,                   
+                    diets: dietsArray
+                }
+                return res.status(200).send(modifiedDBObj)
+
+            } else {
+                res.status(200).send(apiFilteredResult)
+            }
+        }
+    }
+    catch (e) {
+        res.status(400).send('THERE ARE NOT RECIPES BY THAT ID.. :(')      
     }
 });
 
@@ -96,7 +138,7 @@ router.post('/recipes', async (req, res) => {
         createRecipe.addDiets(relatedDiets)
         res.status(200).send(createRecipe)
     } catch(e) {
-        res.status(400).send("THERE WAS AND ERROR WHILE CHARGING DATA...")
+        res.status(400).send("THERE WAS AND ERROR WHILE CHARGING DATA..")
     }
 });
 
@@ -127,7 +169,7 @@ router.get('/diets', async (req, res) => {
         res.status(200).send(diets)
     }
     catch (e) {
-        res.status(400).send('THERE ARE NOT AVAILABLE DIETS..')
+        res.status(400).send('THERE ARE NOT AVAILABLE DIETS..')      
     }
 });
 
