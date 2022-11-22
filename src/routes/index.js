@@ -127,7 +127,7 @@ router.get('/diets', async (req, res) => {
         res.status(200).send(diets)
     }
     catch (e) {
-        res.status(400).send('THERE ARE NOT AVAILABLE RECIPES...')
+        res.status(400).send('THERE ARE NOT AVAILABLE DIETS..')
     }
 });
 

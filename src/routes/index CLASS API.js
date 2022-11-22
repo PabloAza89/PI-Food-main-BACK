@@ -77,7 +77,7 @@ router.get('/recipes', async (req, res) => {
         return res.status(200).send(arrayForDB.concat(apiFilteredResult))
     }
     catch (e) {
-        if (e.code === 'ERR_BAD_REQUEST') res.status(402).send('ERROR DE API_KEY.. POR FAVOR ACTUALIZA LA API KEY !')
+        if (e.code === 'ERR_BAD_REQUEST') res.status(402).send('API_KEY ERROR... PLEASE, UPDATE THE API_KEY !')
         else res.send(e.code)
     }
 });
@@ -118,7 +118,7 @@ router.get('/recipes/:id', async (req, res) => {
         }
     }
     catch (e) {
-        res.status(400).send('No hay recetas con ese id')      
+        res.status(400).send('THERE ARE NOT RECIPES BY THAT ID.. :(')      
     }
 });
 
@@ -142,13 +142,34 @@ router.post('/recipes', async (req, res) => {
     }
 });
 
+router.post('/diets', async (req, res) => {
+    try {
+        res.json(await Diets.bulkCreate([      
+            { title: "All Diets", },
+            { title: "Gluten Free", },
+            { title: "Ketogenic" },
+            { title: "Vegan" },
+            { title: "Lacto Ovo Vegetarian" },
+            { title: "Pescatarian" },
+            { title: "Paleolithic" },
+            { title: "Primal" },
+            { title: "Fodmap Friendly" },
+            { title: "Whole 30" },
+            { title: "Dairy Free" }
+          ], {validate: true}))
+    }
+    catch(e) {
+        res.status(400).send('ONLY A-Z OR 0-9 VALUES ALLOWED ! OR "DIETS" ALREADY EXISTS...')
+    } 
+});
+
 router.get('/diets', async (req, res) => {
     try {
         const diets = await Diets.findAll()
         res.status(200).send(diets)
     }
     catch (e) {
-        res.status(400).send('No hay dietas disponibles...')      
+        res.status(400).send('THERE ARE NOT AVAILABLE DIETS..')      
     }
 });
 
