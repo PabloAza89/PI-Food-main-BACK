@@ -17,7 +17,7 @@ const router = Router();
 // Ejemplo: router.use('/auth', authRouter);
 
 let allApiResults = async () => {
-    return await toAvoidKey.results.map(e => {
+    return toAvoidKey.results.map(e => {
         return {
             id: e.id,
             title: e.title,
@@ -72,7 +72,7 @@ router.get('/recipes', async (req, res) => {
             })
         })
 
-        let allApiResultsHelper = await allApiResults()
+        let allApiResultsHelper = allApiResults()
         const apiFilteredResult = req.query.title?allApiResultsHelper.filter(e => e.title.toLowerCase().includes(req.query.title.toLowerCase())):allApiResultsHelper;
         return res.status(200).send(arrayForDB.concat(apiFilteredResult))
     }
@@ -88,7 +88,7 @@ router.get('/recipes/:id', async (req, res) => {
  
     try {
         if (true) {
-            let allApiResultsHelper = await allApiResults()
+            let allApiResultsHelper = allApiResults()
             const apiFilteredResult = allApiResultsHelper.filter(e => e.id === parseInt(id));
             console.log("AA", apiFilteredResult[0] === undefined)
 
