@@ -17,7 +17,7 @@ const router = Router();
 
 let allApiResults = async () => {
     const apiRawData = await axios.get(`https://api.spoonacular.com/recipes/complexSearch?apiKey=f02bdac78602401eb4a22dc35033d573&number=3&addRecipeInformation=true`);
-    return apiRawData.data.results.map(e => {
+    return await apiRawData.data.results.map(e => {
         return {
             id: e.id,
             title: e.title,
