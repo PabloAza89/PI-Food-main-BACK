@@ -18,7 +18,7 @@ describe('Recipes route', () => {
   .catch((err) => {
     console.error('Unable to connect to the database:', err);
   }));
-  beforeEach(() => Recipes.sync({ force: false })
+  beforeEach(() => Recipes.sync({ force: true })
     .then(() => Recipes.create(recipe)));
   describe('GET /recipes', () => {
     it('should get 200', () =>

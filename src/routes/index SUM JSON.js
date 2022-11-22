@@ -1,4 +1,4 @@
-// INDEX CLASSIC WITH JSON
+// INDEX SUM WITH JSON
 const { Router } = require('express');
 // Importar todos los routers;
 // Ejemplo: const authRouter = require('./auth.js');
@@ -90,7 +90,6 @@ router.get('/recipes/:id', async (req, res) => {
         if (true) {
             let allApiResultsHelper = await allApiResults()
             const apiFilteredResult = allApiResultsHelper.filter(e => e.id === parseInt(id));
-            console.log("AA", apiFilteredResult[0] === undefined)
 
             if (apiFilteredResult[0] === undefined) {
                 findByIDinDB = await Recipes.findByPk(id, {
