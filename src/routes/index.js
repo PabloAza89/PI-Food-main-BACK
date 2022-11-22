@@ -1,17 +1,23 @@
-// INDEX SUMMARIZED WITH API
+// INDEX SUMMARIZED WITH JSON
 const { Router } = require('express');
+// Importar todos los routers;
+// Ejemplo: const authRouter = require('./auth.js');
 const axios = require('axios');
 require('dotenv').config();
 const { API_KEY1 , API_KEY2 , API_KEY3 , API_KEY4 , API_KEY5 } = process.env;
-const API_KEY = API_KEY2;
+const API_KEY = API_KEY1;
 const NUMBER = 3;
-const { Recipes , Diets , Op } = require('../db.js');
+
+const { Recipes , Diets , Op } = require('../db.js'); 
+let toAvoidKey = require('../../toAvoidKey');
 
 const router = Router();
 
+// Configurar los routers
+// Ejemplo: router.use('/auth', authRouter);
+
 let allApiResults = async () => {
-    const apiRawData = await axios.get(`https://api.spoonacular.com/recipes/complexSearch?apiKey=${API_KEY}&number=${NUMBER}&addRecipeInformation=true`);
-    return apiRawData.data.results.map(e => {
+    return await toAvoidKey.results.map(e => {
         return {
             id: e.id,
             title: e.title,
@@ -24,7 +30,7 @@ let allApiResults = async () => {
                 if ((e.indexOf(e) !== e.length - 1)) {
                     return e.split(" ").map(e => e[0].toUpperCase() + e.slice(1)).join(" ")
                 } else return e.split(" ").map(e => e[0].toUpperCase() + e.slice(1)).join(" ")
-                }),          
+                }), 
             dishTypes: e.dishTypes
         }
     })
@@ -90,7 +96,7 @@ router.post('/recipes', async (req, res) => {
         createRecipe.addDiets(relatedDiets)
         res.status(200).send(createRecipe)
     } catch(e) {
-        res.status(400).send("THERE WAS AND ERROR WHILE CHARGING DATA..")
+        res.status(400).send("THERE WAS AND ERROR WHILE CHARGING DATA...")
     }
 });
 
@@ -119,8 +125,9 @@ router.get('/diets', async (req, res) => {
     try {
         const diets = await Diets.findAll()
         res.status(200).send(diets)
-    } catch(e) {
-        res.status(400).send('THERE ARE NOT AVAILABLE DIETS.. :(')      
+    }
+    catch (e) {
+        res.status(400).send('THERE ARE NOT AVAILABLE DIETS..')
     }
 });
 
