@@ -7,7 +7,7 @@ describe('Recipes Model', () => {
       console.error('Unable to connect to the database:', err);
     }));
   describe('Validators', () => {
-    beforeEach(() => Recipes.sync({ force: true }));
+    beforeEach(() => Recipes.sync({ force: false }));
     describe('Title & Summary & Health Score & Instructions', () => {
       it('Should throw an error if "Title" or "Summary" or "Health Score" or "Instructions" is null', (done) => {
         Recipes.create({
