@@ -1,4 +1,4 @@
-// INDEX SUM WITH JSON
+// INDEX CLASSIC WITH JSON
 const { Router } = require('express');
 // Importar todos los routers;
 // Ejemplo: const authRouter = require('./auth.js');
@@ -90,6 +90,7 @@ router.get('/recipes/:id', async (req, res) => {
         if (true) {
             let allApiResultsHelper = await allApiResults()
             const apiFilteredResult = allApiResultsHelper.filter(e => e.id === parseInt(id));
+            console.log("AA", apiFilteredResult[0] === undefined)
 
             if (apiFilteredResult[0] === undefined) {
                 findByIDinDB = await Recipes.findByPk(id, {
@@ -141,6 +142,27 @@ router.post('/recipes', async (req, res) => {
         res.status(400).send("THERE WAS AND ERROR WHILE CHARGING DATA..")
     }
 });
+
+router.post('/diets', async (req, res) => {
+    try {
+        res.json(await Diets.bulkCreate([      
+            { title: "All Diets", },
+            { title: "Gluten Free", },
+            { title: "Ketogenic" },
+            { title: "Vegan" },
+            { title: "Lacto Ovo Vegetarian" },
+            { title: "Pescatarian" },
+            { title: "Paleolithic" },
+            { title: "Primal" },
+            { title: "Fodmap Friendly" },
+            { title: "Whole 30" },
+            { title: "Dairy Free" }
+          ]))
+    }
+    catch(e) {
+        res.status(400).send('Las dietas ya estan precargadas')
+    } 
+  });
 
 router.get('/diets', async (req, res) => {
     try {

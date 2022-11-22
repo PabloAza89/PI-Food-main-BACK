@@ -10,7 +10,14 @@ module.exports = (sequelize) => {
     title: {
       type: DataTypes.STRING,
       allowNull: false,
-      unique: true
+      unique: true,
+      validate: { 
+        notAlpha(value) {
+          if (!/^[\w ]+$/i.test(value)) {
+            throw new Error('Only A-Z and 0-9 values are allowed !');
+          }
+        }
+      }  
     },
   }, {
     timestamps: false

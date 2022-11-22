@@ -1,4 +1,4 @@
-// INDEX CLASSIC WITH JSON
+// INDEX SUM WITH JSON
 const { Router } = require('express');
 // Importar todos los routers;
 // Ejemplo: const authRouter = require('./auth.js');
@@ -77,7 +77,7 @@ router.get('/recipes', async (req, res) => {
         return res.status(200).send(arrayForDB.concat(apiFilteredResult))
     }
     catch (e) {
-        if (e.code === 'ERR_BAD_REQUEST') res.status(402).send('ERROR DE API_KEY.. POR FAVOR ACTUALIZA LA API KEY !')
+        if (e.code === 'ERR_BAD_REQUEST') res.status(402).send('API_KEY error... Please update your API_KEY code !')
         else res.send(e.code)
     }
 });
@@ -90,7 +90,6 @@ router.get('/recipes/:id', async (req, res) => {
         if (true) {
             let allApiResultsHelper = await allApiResults()
             const apiFilteredResult = allApiResultsHelper.filter(e => e.id === parseInt(id));
-            console.log("AA", apiFilteredResult[0] === undefined)
 
             if (apiFilteredResult[0] === undefined) {
                 findByIDinDB = await Recipes.findByPk(id, {
@@ -119,7 +118,7 @@ router.get('/recipes/:id', async (req, res) => {
         }
     }
     catch (e) {
-        res.status(400).send('No hay recetas con ese id')      
+        res.status(400).send('There are not recipes with that id...')      
     }
 });
 
@@ -139,7 +138,7 @@ router.post('/recipes', async (req, res) => {
         createRecipe.addDiets(relatedDiets)
         res.status(200).send(createRecipe)
     } catch(e) {
-        res.status(400).send("THERE WAS AND ERROR WHILE CHARGING DATA..")
+        res.status(400).send("There was an error while charging data...")
     }
 });
 
@@ -157,12 +156,12 @@ router.post('/diets', async (req, res) => {
             { title: "Fodmap Friendly" },
             { title: "Whole 30" },
             { title: "Dairy Free" }
-          ]))
+          ], {validate: true}))
     }
     catch(e) {
-        res.status(400).send('Las dietas ya estan precargadas')
+        res.status(400).send('Only A-Z or 0-9 values allowed ! or Diets already exists...')
     } 
-  });
+});
 
 router.get('/diets', async (req, res) => {
     try {
@@ -170,7 +169,7 @@ router.get('/diets', async (req, res) => {
         res.status(200).send(diets)
     }
     catch (e) {
-        res.status(400).send('No hay dietas disponibles...')      
+        res.status(400).send('There are not available recipes...')
     }
 });
 
