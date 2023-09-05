@@ -2,7 +2,7 @@ const { DataTypes } = require('sequelize');
 
 module.exports = (sequelize) => {
   sequelize.define('Diets', {
-    id:{
+    id: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
@@ -17,7 +17,7 @@ module.exports = (sequelize) => {
             throw new Error('Only A-Z and 0-9 values are allowed !');
           }
         }
-      }  
+      }
     },
   }, {
     timestamps: false

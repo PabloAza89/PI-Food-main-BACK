@@ -11,8 +11,8 @@ module.exports = (sequelize) => {
       type: DataTypes.STRING,
       allowNull: false
     },
-    summary: {
-      type: DataTypes.TEXT,
+    image: {
+      type: DataTypes.STRING,
       allowNull: false
     },
     healthScore: {
@@ -23,9 +23,18 @@ module.exports = (sequelize) => {
         min: 0
       }
     },
-    analyzedInstructions: {
+    summary: {
       type: DataTypes.TEXT,
       allowNull: false
+    },
+    analyzedInstructions: {
+      type: DataTypes.ARRAY(DataTypes.STRING),
+      allowNull: false
+    },
+    userRecipe: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: true,
     }
   }, {
     timestamps: false
