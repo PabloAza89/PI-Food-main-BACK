@@ -93,35 +93,35 @@ router.get('/recipes/:id', async (req, res) => {
     var findByIDinDB;
 
     try {
-        if (true) {
+        //if (true) {
             let allApiResultsHelper = await allApiResults()
-            const apiFilteredResult = allApiResultsHelper.filter(e => e.id === parseInt(id));
+            const apiFilteredResult = allApiResultsHelper.filter(e => e.id === id);
 
             if (apiFilteredResult[0] === undefined) {
                 findByIDinDB = await Recipes.findByPk(id, {
-                    include: [{
-                        model: Diets,
-                        attributes: ['title'],
-                        through: {
-                          attributes: []
-                        }
-                      }]
+                  include: [{
+                    model: Diets,
+                    attributes: ['title'],
+                    through: {
+                      attributes: []
+                    }
+                  }]
                 })
                 let dietsArray = findByIDinDB.Diets.map(e => e.title)
                 let modifiedDBObj = {
-                    id: findByIDinDB.id,
-                    title: findByIDinDB.title,
-                    summary: findByIDinDB.summary,
-                    healthScore: findByIDinDB.healthScore,
-                    analyzedInstructions: findByIDinDB.analyzedInstructions,
-                    diets: dietsArray
+                  id: findByIDinDB.id,
+                  title: findByIDinDB.title,
+                  summary: findByIDinDB.summary,
+                  healthScore: findByIDinDB.healthScore,
+                  analyzedInstructions: findByIDinDB.analyzedInstructions,
+                  diets: dietsArray
                 }
                 return res.status(200).send(modifiedDBObj)
 
             } else {
                 res.status(200).send(apiFilteredResult)
             }
-        }
+        //}
     }
     catch (e) {
         res.status(400).send('THERE ARE NOT RECIPES BY THAT ID.. :(')
@@ -130,6 +130,7 @@ router.get('/recipes/:id', async (req, res) => {
 
 router.post('/recipes', async (req, res) => {
   const { title, image, healthScore, summary, diets, analyzedInstructions } = req.body;
+  console.log("diets", diets)
   //console.log("image", image)
   try {
     if (
