@@ -130,7 +130,7 @@ router.get('/recipes/:id', async (req, res) => {
 
 router.post('/recipes', async (req, res) => {
   const { title, image, healthScore, summary, diets, analyzedInstructions } = req.body;
-  console.log("image", image)
+  //console.log("image", image)
   try {
     if (
       title.replaceAll(" ","").replaceAll("\n", "") === "" ||
@@ -140,18 +140,19 @@ router.post('/recipes', async (req, res) => {
       analyzedInstructions.map(e => e.replaceAll(" ","").replaceAll("\n","")).some(e => e === "")
     ) res.status(400).json({'status': 400})
     else {
+
         const createRecipe = await Recipes.create({
           title: title,
-          image: image,
           healthScore: parseInt(healthScore),
           summary: summary,
+          image: image,
           analyzedInstructions: analyzedInstructions,
           userRecipe: true
         });
       const relatedDiets = await Diets.findAll({
           where: { [Op.or]: [ { title: diets } ] }
       })
-
+      
       createRecipe.addDiets(relatedDiets)
 
       cloudinary.config({
@@ -160,8 +161,21 @@ router.post('/recipes', async (req, res) => {
         api_secret: CLD_SECRET
       });
 
-      cloudinary.uploader.upload(image, { public_id: createRecipe.id, overwrite: true },
-      function(error, result) {console.log("result", result, "error", error)});
+      cloudinary.uploader.upload(image, { public_id: createRecipe.id, overwrite: true })
+      .then(async() => {
+        const updateRecipe = await Recipes.findOne({
+          where: { id: createRecipe.id }
+        });
+        updateRecipe.image = createRecipe.id;
+        await updateRecipe.save();
+      })
+      .catch(async() => {
+        const updateRecipe = await Recipes.findOne({
+          where: { id: createRecipe.id }
+        });
+        updateRecipe.image = Math.ceil(Math.random() * 3);
+        await updateRecipe.save();
+      })
 
       res.status(200).json({ 'status': 200 })
     }
