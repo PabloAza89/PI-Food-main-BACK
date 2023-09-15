@@ -5,7 +5,7 @@ const axios = require('axios');
 require('dotenv').config();
 const { CLD_NAME, CLD_KEY, CLD_SECRET, API_KEY1 , API_KEY2 , API_KEY3 , API_KEY4 , API_KEY5 } = process.env;
 const API_KEY = API_KEY1;
-const NUMBER = 3;
+const NUMBER = 1;
 const { Recipes , Diets , Op } = require('../db.js');
 
 const router = Router();
@@ -198,45 +198,31 @@ router.get('/recipes', async (req, res) => {
         })
 
 
-        //console.log("allApiResultsHelper", console.log(allApiResults(API_KEY1)))
+        let allApiResultsHelper// = await allApiResults({ key: API_KEY1, try: 1 })
 
-        //let values = { key: API_KEY1, try: 1 }
-
-        let allApiResultsHelper = await allApiResults({ key: API_KEY1, try: 1 })
-        //let allApiResultsHelper = await allApiResults()
-        //let allApiResultsHelper = await allApiResults()
 
         console.log("1 allApiResultsHelper", allApiResultsHelper)
 
-        //if (allApiResultsHelper.status === 402) allApiResultsHelper = await allApiResults({ key: API_KEY3, try: 3 })
-        //else allApiResultsHelper = allApiResultsHelper
-        //console.log("2 allApiResultsHelper", allApiResultsHelper)
 
-        if (allApiResultsHelper.ok === false) {
-            return res.status(400).json({ status: 400, message: "Database error", ok: false, try: 1 })
-        } else {
+        let qq = [ API_KEY2, API_KEY2, API_KEY2, API_KEY2, API_KEY2, API_KEY2, API_KEY2, API_KEY3, API_KEY2 ]
+
+        let j = 0
+
+          
+        
+          do {
+            allApiResultsHelper = await allApiResults({ key: qq[j], try: j + 1 })
+            console.log("2 allApiResultsHelper", allApiResultsHelper)
+            j += 1
+
+          } while (allApiResultsHelper.ok === false && allApiResultsHelper.message === 'Expired key')
+       
           const apiFilteredResult =
             req.query.title ?
             allApiResultsHelper.filter(e => e.title.toLowerCase().includes(req.query.title.toLowerCase())) :
             allApiResultsHelper;
 
-          return res.status(200).json({ status: 200, message: arrayFromDB.concat(apiFilteredResult), ok: true })
-
-        }
-
-        // const apiFilteredResult =
-        //     req.query.title ?
-        //     allApiResultsHelper.filter(e => e.title.toLowerCase().includes(req.query.title.toLowerCase())) :
-        //     allApiResultsHelper;
-
-        //   return res.status(200).json({ status: 200, message: arrayFromDB.concat(apiFilteredResult), ok: true })
-        
-          
-
-        
-
-        
-        
+          return res.status(200).json({ status: 200, message: arrayFromDB.concat(apiFilteredResult), ok: true, try: j })
         
     }
     catch (err) {
