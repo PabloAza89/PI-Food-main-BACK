@@ -12,7 +12,7 @@ module.exports = (sequelize) => {
       allowNull: false
     },
     image: {
-      type: DataTypes.STRING,
+      type: DataTypes.TEXT,
       allowNull: true
     },
     healthScore: {
@@ -35,6 +35,10 @@ module.exports = (sequelize) => {
       type: DataTypes.BOOLEAN,
       allowNull: false,
       defaultValue: true,
+    },
+    email: {
+      type: DataTypes.STRING,
+      allowNull: false
     }
   }, {
     timestamps: false

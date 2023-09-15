@@ -1,20 +1,61 @@
-// INDEX CLASSIC WITH API
-//const v2 = require('cloudinary');
 const cloudinary = require('cloudinary').v2
+var cookieParser = require('cookie-parser')
 const { Router } = require('express');
 const axios = require('axios');
 require('dotenv').config();
 const { CLD_NAME, CLD_KEY, CLD_SECRET, API_KEY1 , API_KEY2 , API_KEY3 , API_KEY4 , API_KEY5 } = process.env;
 const API_KEY = API_KEY1;
 const NUMBER = 3;
-
 const { Recipes , Diets , Op } = require('../db.js');
 
 const router = Router();
 
-let allApiResults = async () => {
-  const apiRawData = await axios.get(`https://api.spoonacular.com/recipes/complexSearch?apiKey=${API_KEY}&number=${NUMBER}&addRecipeInformation=true`);
-  return apiRawData.data.results.map(e => {
+let keys = [ API_KEY1, API_KEY2 ]
+
+cloudinary.config({
+  cloud_name: CLD_NAME,
+  api_key: CLD_KEY,
+  api_secret: CLD_SECRET
+});
+
+// let allApiResults = async () => {
+//   const apiRawData = await axios.get(`https://api.spoonacular.com/recipes/complexSearch?apiKey=${API_KEY1}&number=${NUMBER}&addRecipeInformation=true`)
+  
+//   return apiRawData.data.results.map(e => {
+//     return {
+//       id: e.id,
+//       title: e.title,
+//       summary: e.summary,
+//       healthScore: e.healthScore,
+//       analyzedInstructions:
+//         e.analyzedInstructions[0] ? e.analyzedInstructions[0].steps.map(e=> e.step) : [],
+//       image: e.image,
+//       diets: e.diets.map(function(e) {
+//         if ((e.indexOf(e) !== e.length - 1)) {
+//             return e.split(" ").map(e => e[0].toUpperCase() + e.slice(1)).join(" ")
+//         } else return e.split(" ").map(e => e[0].toUpperCase() + e.slice(1)).join(" ")
+//         }),
+//       dishTypes: e.dishTypes,
+//       userRecipe: false
+//     }
+//   })
+// }
+
+ let allApiResults = async (data) => {
+
+   const apiRawData = await axios.get(`https://api.spoonacular.com/recipes/complexSearch?apiKey=${data.key}&number=${NUMBER}&addRecipeInformation=true`)
+      .then(res => { return res })
+      .catch(err => { return err })
+
+  //console.log("ejeje",apiRawData)
+     console.log("Response bad", apiRawData.response && apiRawData.response.status) // bad = 402
+
+  
+  if (apiRawData.response && apiRawData.response.status === 402) return { status: 402, message: "Expired key", ok: false, try: data.try }
+  
+  /* else */
+  /* else */
+  /* else */ return apiRawData.data.results.map(e => {
     return {
       id: e.id,
       title: e.title,
@@ -32,7 +73,89 @@ let allApiResults = async () => {
       userRecipe: false
     }
   })
+//   //const response = await axios.get(`https://api.spoonacular.com/recipes/complexSearch?apiKey=${data.key}&number=${NUMBER}&addRecipeInformation=true`)
+//   const response = await axios.get(`https://api.spoonacular.com/recipes/complexSearch?apiKey=${API_KEY3}&number=${NUMBER}&addRecipeInformation=true`)
+//     //.then(res => { return res })
+//     //.catch(err => { return err })
+
+//   console.log("Response bad", response.response.status) // bad = 402
+//   console.log("Response good", response.status) // good = 200
+
+//   console.log("Response 3", response.data)
+
+//   //return response.data
+
+//   return apiRawData.data.results.map(e => {
+//         return {
+//           id: e.id,
+//           title: e.title,
+//           summary: e.summary,
+//           healthScore: e.healthScore,
+//           analyzedInstructions:
+//             e.analyzedInstructions[0] ? e.analyzedInstructions[0].steps.map(e=> e.step) : [],
+//           image: e.image,
+//           diets: e.diets.map(function(e) {
+//             if ((e.indexOf(e) !== e.length - 1)) {
+//                 return e.split(" ").map(e => e[0].toUpperCase() + e.slice(1)).join(" ")
+//             } else return e.split(" ").map(e => e[0].toUpperCase() + e.slice(1)).join(" ")
+//             }),
+//           dishTypes: e.dishTypes,
+//           userRecipe: false
+//         }
+//       })
+
+//   // if (response.response.status === 402) return { status: 402, message: "Expired key", ok: false, try: data.try }
+//   // else if (response.status === 200) {
+//   //   return response.data.results.map(e => {
+//   //     return {
+//   //       id: e.id,
+//   //       title: e.title,
+//   //       summary: e.summary,
+//   //       healthScore: e.healthScore,
+//   //       analyzedInstructions:
+//   //         e.analyzedInstructions[0] ? e.analyzedInstructions[0].steps.map(e=> e.step) : [],
+//   //       image: e.image,
+//   //       diets: e.diets.map(function(e) {
+//   //         if ((e.indexOf(e) !== e.length - 1)) {
+//   //             return e.split(" ").map(e => e[0].toUpperCase() + e.slice(1)).join(" ")
+//   //         } else return e.split(" ").map(e => e[0].toUpperCase() + e.slice(1)).join(" ")
+//   //         }),
+//   //       dishTypes: e.dishTypes,
+//   //       userRecipe: false
+//   //     }
+//   //   })
+//   // }
+//   //else return response
+
+//   //return response
+
+//   //console.log("Response", response)
+
+  
+
+//   //else return response
+//   // else return response.data.results.map(e => {
+//   //   return {
+//   //     id: e.id,
+//   //     title: e.title,
+//   //     summary: e.summary,
+//   //     healthScore: e.healthScore,
+//   //     analyzedInstructions:
+//   //       e.analyzedInstructions[0] ? e.analyzedInstructions[0].steps.map(e=> e.step) : [],
+//   //     image: e.image,
+//   //     diets: e.diets.map(function(e) {
+//   //       if ((e.indexOf(e) !== e.length - 1)) {
+//   //           return e.split(" ").map(e => e[0].toUpperCase() + e.slice(1)).join(" ")
+//   //       } else return e.split(" ").map(e => e[0].toUpperCase() + e.slice(1)).join(" ")
+//   //       }),
+//   //     dishTypes: e.dishTypes,
+//   //     userRecipe: false
+//   //   }
+//   // })
+
 }
+
+//console.log("a ver este", allApiResults(`https://api.spoonacular.com/recipes/complexSearch?apiKey=${API_KEY1}&number=${NUMBER}&addRecipeInformation=true`))
 
 router.get('/recipes', async (req, res) => {
   const { title } = req.query;
@@ -74,17 +197,58 @@ router.get('/recipes', async (req, res) => {
           })
         })
 
-        let allApiResultsHelper = await allApiResults()
-        const apiFilteredResult =
-          req.query.title ?
-          allApiResultsHelper.filter(e => e.title.toLowerCase().includes(req.query.title.toLowerCase())) :
-          allApiResultsHelper;
-        return res.status(200).send(arrayFromDB.concat(apiFilteredResult))
-        //return res.status(200).send(arrayFromDB)
+
+        //console.log("allApiResultsHelper", console.log(allApiResults(API_KEY1)))
+
+        //let values = { key: API_KEY1, try: 1 }
+
+        let allApiResultsHelper = await allApiResults({ key: API_KEY1, try: 1 })
+        //let allApiResultsHelper = await allApiResults()
+        //let allApiResultsHelper = await allApiResults()
+
+        console.log("1 allApiResultsHelper", allApiResultsHelper)
+
+        //if (allApiResultsHelper.status === 402) allApiResultsHelper = await allApiResults({ key: API_KEY3, try: 3 })
+        //else allApiResultsHelper = allApiResultsHelper
+        //console.log("2 allApiResultsHelper", allApiResultsHelper)
+
+        if (allApiResultsHelper.ok === false) {
+            return res.status(400).json({ status: 400, message: "Database error", ok: false, try: 1 })
+        } else {
+          const apiFilteredResult =
+            req.query.title ?
+            allApiResultsHelper.filter(e => e.title.toLowerCase().includes(req.query.title.toLowerCase())) :
+            allApiResultsHelper;
+
+          return res.status(200).json({ status: 200, message: arrayFromDB.concat(apiFilteredResult), ok: true })
+
+        }
+
+        // const apiFilteredResult =
+        //     req.query.title ?
+        //     allApiResultsHelper.filter(e => e.title.toLowerCase().includes(req.query.title.toLowerCase())) :
+        //     allApiResultsHelper;
+
+        //   return res.status(200).json({ status: 200, message: arrayFromDB.concat(apiFilteredResult), ok: true })
+        
+          
+
+        
+
+        
+        
+        
     }
-    catch (e) {
-        if (e.code === 'ERR_BAD_REQUEST') res.status(402).send('API_KEY ERROR... PLEASE, UPDATE THE API_KEY !')
-        else res.send(e.code)
+    catch (err) {
+      //console.log("api error", err.response.status)
+      //console.log("api error", err)
+      //console.log("api error", err.response.data.code) // 402
+      //console.log("api error", err.response.data) // 402
+      
+        
+        //if (err.response.data.code === 402) res.status(400).json({ status: 400, message: "Expired key", ok: false })
+        //else res.status(400).json({ status: 400, message: "Error", ok: false })
+        
     }
 });
 
@@ -129,16 +293,22 @@ router.get('/recipes/:id', async (req, res) => {
 });
 
 router.post('/recipes', async (req, res) => {
-  const { title, image, healthScore, summary, diets, analyzedInstructions } = req.body;
-  console.log("diets", diets)
-  //console.log("image", image)
+
+  const {
+    title, image, healthScore, summary,
+    diets, analyzedInstructions, email
+  } = req.body;
+
+  console.log("image",image)
+
   try {
     if (
       title.replaceAll(" ","").replaceAll("\n", "") === "" ||
       healthScore === "" ||
       summary.replaceAll(" ","").replaceAll("\n", "") === "" ||
       diets.length === 0 ||
-      analyzedInstructions.map(e => e.replaceAll(" ","").replaceAll("\n","")).some(e => e === "")
+      analyzedInstructions.map(e => e.replaceAll(" ","").replaceAll("\n","")).some(e => e === "") ||
+      email.replaceAll(" ","").replaceAll("\n", "") === ""
     ) res.status(400).json({'status': 400})
     else {
 
@@ -148,22 +318,18 @@ router.post('/recipes', async (req, res) => {
           summary: summary,
           image: image,
           analyzedInstructions: analyzedInstructions,
-          userRecipe: true
+          userRecipe: true,
+          email: email
         });
       const relatedDiets = await Diets.findAll({
           where: { [Op.or]: [ { title: diets } ] }
       })
-      
+
       createRecipe.addDiets(relatedDiets)
 
-      cloudinary.config({
-        cloud_name: CLD_NAME,
-        api_key: CLD_KEY,
-        api_secret: CLD_SECRET
-      });
-
-      cloudinary.uploader.upload(image, { public_id: createRecipe.id, overwrite: true })
-      .then(async() => {
+      cloudinary.uploader.upload(image, { public_id: createRecipe.id, overwrite: true, invalidate: true })
+      .then(async(res) => {
+        console.log("RES", res)
         const updateRecipe = await Recipes.findOne({
           where: { id: createRecipe.id }
         });
@@ -171,6 +337,7 @@ router.post('/recipes', async (req, res) => {
         await updateRecipe.save();
       })
       .catch(async() => {
+        //console.log(ere)
         const updateRecipe = await Recipes.findOne({
           where: { id: createRecipe.id }
         });
@@ -209,6 +376,42 @@ router.get('/diets', async (req, res) => { // THIS ROUTE ALWAYS RETURN DIETS.
     } catch (e) {
       res.status(400).send('THERE ARE NOT AVAILABLE DIETS..')
     }
+  }
+});
+
+router.post('/user', async (req, res) => {
+  const { email, token } = req.body;
+  console.log("email", email, "token", token, "fd_tkn", req.cookies.fd_tkn)
+
+  try {
+    const minutes = 2880 // 1 hour = 60 // 12 hours = 720 // 1 day = 1440 // 7 days = 10080
+      let options = {
+        path: "/",
+        expires: new Date(Date.now() + (60 * 1000 * minutes)),
+        //domain: 'localhost:3001',
+        httpOnly: true
+      }
+
+    if (req.cookies.fd_tkn && !token) {
+      let response = await axios.get(`https://www.googleapis.com/oauth2/v3/userinfo?access_token=${req.cookies.fd_tkn}`)
+
+      if (response.data.email !== undefined) {
+        res.cookie('fd_tkn', req.cookies.fd_tkn, options)
+        res.status(200).json({ email: response.data.email, token: req.cookies.fd_tkn, status: 200 })
+      }
+    }
+
+    if (!req.cookies.fd_tkn && token) {
+      res.cookie('fd_tkn', token, options)
+      res.status(200).json({ status: 200 })
+    }
+
+  }
+  catch(err) {
+    if (err.response.data.error_description === 'Invalid Credentials') {
+      res.clearCookie("fd_tkn")
+      return res.status(400).json({ status: 400, message: err.response.data.error_description, ok: false })
+    } else return res.status(400).json({ status: 400, message: "error", ok: false })
   }
 });
 
