@@ -6,7 +6,7 @@ require('dotenv').config();
 const { CLD_NAME, CLD_KEY, CLD_SECRET, API_KEY1 , API_KEY2 , API_KEY3 , API_KEY4 , API_KEY5 } = process.env;
 const API_KEY = API_KEY1;
 const NUMBER = 1;
-const { Recipes , Diets , Op } = require('../db.js');
+const { Recipes , Diets , Dishes, Op } = require('../db.js');
 
 const router = Router();
 
@@ -18,144 +18,37 @@ cloudinary.config({
   api_secret: CLD_SECRET
 });
 
-// let allApiResults = async () => {
-//   const apiRawData = await axios.get(`https://api.spoonacular.com/recipes/complexSearch?apiKey=${API_KEY1}&number=${NUMBER}&addRecipeInformation=true`)
-  
-//   return apiRawData.data.results.map(e => {
-//     return {
-//       id: e.id,
-//       title: e.title,
-//       summary: e.summary,
-//       healthScore: e.healthScore,
-//       analyzedInstructions:
-//         e.analyzedInstructions[0] ? e.analyzedInstructions[0].steps.map(e=> e.step) : [],
-//       image: e.image,
-//       diets: e.diets.map(function(e) {
-//         if ((e.indexOf(e) !== e.length - 1)) {
-//             return e.split(" ").map(e => e[0].toUpperCase() + e.slice(1)).join(" ")
-//         } else return e.split(" ").map(e => e[0].toUpperCase() + e.slice(1)).join(" ")
-//         }),
-//       dishTypes: e.dishTypes,
-//       userRecipe: false
-//     }
-//   })
-// }
-
  let allApiResults = async (data) => {
 
    const apiRawData = await axios.get(`https://api.spoonacular.com/recipes/complexSearch?apiKey=${data.key}&number=${NUMBER}&addRecipeInformation=true`)
-      .then(res => { return res })
-      .catch(err => { return err })
+       .then(res => { return res })
+       .catch(err => { return err })
 
-  //console.log("ejeje",apiRawData)
-     console.log("Response bad", apiRawData.response && apiRawData.response.status) // bad = 402
+  //console.log("Response bad", apiRawData.response && apiRawData.response.status) // bad = 402
 
-  
   if (apiRawData.response && apiRawData.response.status === 402) return { status: 402, message: "Expired key", ok: false, try: data.try }
-  
-  /* else */
-  /* else */
-  /* else */ return apiRawData.data.results.map(e => {
+
+  else return apiRawData.data && apiRawData.data.results.map(e => {
     return {
       id: e.id,
       title: e.title,
       summary: e.summary,
       healthScore: e.healthScore,
       analyzedInstructions:
-        e.analyzedInstructions[0] ? e.analyzedInstructions[0].steps.map(e=> e.step) : [],
+        e.analyzedInstructions[0] ?
+        e.analyzedInstructions[0].steps.map(e=> e.step) :
+        [],
       image: e.image,
-      diets: e.diets.map(function(e) {
-        if ((e.indexOf(e) !== e.length - 1)) {
-            return e.split(" ").map(e => e[0].toUpperCase() + e.slice(1)).join(" ")
-        } else return e.split(" ").map(e => e[0].toUpperCase() + e.slice(1)).join(" ")
+      diets:
+        e.diets.map(function(e) {
+          if ((e.indexOf(e) !== e.length - 1)) return e.split(" ").map(e => e[0].toUpperCase() + e.slice(1)).join(" ")
+          else return e.split(" ").map(e => e[0].toUpperCase() + e.slice(1)).join(" ")
         }),
       dishTypes: e.dishTypes,
       userRecipe: false
     }
   })
-//   //const response = await axios.get(`https://api.spoonacular.com/recipes/complexSearch?apiKey=${data.key}&number=${NUMBER}&addRecipeInformation=true`)
-//   const response = await axios.get(`https://api.spoonacular.com/recipes/complexSearch?apiKey=${API_KEY3}&number=${NUMBER}&addRecipeInformation=true`)
-//     //.then(res => { return res })
-//     //.catch(err => { return err })
-
-//   console.log("Response bad", response.response.status) // bad = 402
-//   console.log("Response good", response.status) // good = 200
-
-//   console.log("Response 3", response.data)
-
-//   //return response.data
-
-//   return apiRawData.data.results.map(e => {
-//         return {
-//           id: e.id,
-//           title: e.title,
-//           summary: e.summary,
-//           healthScore: e.healthScore,
-//           analyzedInstructions:
-//             e.analyzedInstructions[0] ? e.analyzedInstructions[0].steps.map(e=> e.step) : [],
-//           image: e.image,
-//           diets: e.diets.map(function(e) {
-//             if ((e.indexOf(e) !== e.length - 1)) {
-//                 return e.split(" ").map(e => e[0].toUpperCase() + e.slice(1)).join(" ")
-//             } else return e.split(" ").map(e => e[0].toUpperCase() + e.slice(1)).join(" ")
-//             }),
-//           dishTypes: e.dishTypes,
-//           userRecipe: false
-//         }
-//       })
-
-//   // if (response.response.status === 402) return { status: 402, message: "Expired key", ok: false, try: data.try }
-//   // else if (response.status === 200) {
-//   //   return response.data.results.map(e => {
-//   //     return {
-//   //       id: e.id,
-//   //       title: e.title,
-//   //       summary: e.summary,
-//   //       healthScore: e.healthScore,
-//   //       analyzedInstructions:
-//   //         e.analyzedInstructions[0] ? e.analyzedInstructions[0].steps.map(e=> e.step) : [],
-//   //       image: e.image,
-//   //       diets: e.diets.map(function(e) {
-//   //         if ((e.indexOf(e) !== e.length - 1)) {
-//   //             return e.split(" ").map(e => e[0].toUpperCase() + e.slice(1)).join(" ")
-//   //         } else return e.split(" ").map(e => e[0].toUpperCase() + e.slice(1)).join(" ")
-//   //         }),
-//   //       dishTypes: e.dishTypes,
-//   //       userRecipe: false
-//   //     }
-//   //   })
-//   // }
-//   //else return response
-
-//   //return response
-
-//   //console.log("Response", response)
-
-  
-
-//   //else return response
-//   // else return response.data.results.map(e => {
-//   //   return {
-//   //     id: e.id,
-//   //     title: e.title,
-//   //     summary: e.summary,
-//   //     healthScore: e.healthScore,
-//   //     analyzedInstructions:
-//   //       e.analyzedInstructions[0] ? e.analyzedInstructions[0].steps.map(e=> e.step) : [],
-//   //     image: e.image,
-//   //     diets: e.diets.map(function(e) {
-//   //       if ((e.indexOf(e) !== e.length - 1)) {
-//   //           return e.split(" ").map(e => e[0].toUpperCase() + e.slice(1)).join(" ")
-//   //       } else return e.split(" ").map(e => e[0].toUpperCase() + e.slice(1)).join(" ")
-//   //       }),
-//   //     dishTypes: e.dishTypes,
-//   //     userRecipe: false
-//   //   }
-//   // })
-
 }
-
-//console.log("a ver este", allApiResults(`https://api.spoonacular.com/recipes/complexSearch?apiKey=${API_KEY1}&number=${NUMBER}&addRecipeInformation=true`))
 
 router.get('/recipes', async (req, res) => {
   const { title } = req.query;
@@ -164,7 +57,7 @@ router.get('/recipes', async (req, res) => {
     return req.query.title ? { title: {[Op.like]: `%${req.query.title.toLowerCase()}%`}} : {}
   }
 
-    try {
+   // try {
         const searchDBRecipes = await Recipes.findAll({
           where:
           ifTitleExists()
@@ -197,35 +90,36 @@ router.get('/recipes', async (req, res) => {
           })
         })
 
-
         let allApiResultsHelper// = await allApiResults({ key: API_KEY1, try: 1 })
 
-
         console.log("1 allApiResultsHelper", allApiResultsHelper)
-
-
-        let qq = [ API_KEY2, API_KEY2, API_KEY2, API_KEY2, API_KEY2, API_KEY2, API_KEY2, API_KEY3, API_KEY2 ]
+        
+        //let keysArray = [ API_KEY1, API_KEY2, API_KEY3, API_KEY4, API_KEY5 ] // length 5
+        let keysArray = [ API_KEY1, API_KEY2, API_KEY3, API_KEY4, API_KEY5 ] // length 5
 
         let j = 0
-
-          
         
-          do {
-            allApiResultsHelper = await allApiResults({ key: qq[j], try: j + 1 })
-            console.log("2 allApiResultsHelper", allApiResultsHelper)
-            j += 1
+        do {
+          allApiResultsHelper = await allApiResults({ key: keysArray[j], try: j + 1 })
+          console.log("2 allApiResultsHelper", allApiResultsHelper)
+          j += 1
 
-          } while (allApiResultsHelper.ok === false && allApiResultsHelper.message === 'Expired key')
-       
-          const apiFilteredResult =
-            req.query.title ?
-            allApiResultsHelper.filter(e => e.title.toLowerCase().includes(req.query.title.toLowerCase())) :
-            allApiResultsHelper;
+        } while (allApiResultsHelper.ok === false && allApiResultsHelper.message === 'Expired key' && j < keysArray.length )
+      
+        const apiFilteredResult =
+          req.query.title ?
+          allApiResultsHelper.filter(e => e.title.toLowerCase().includes(req.query.title.toLowerCase())) :
+          allApiResultsHelper;
 
-          return res.status(200).json({ status: 200, message: arrayFromDB.concat(apiFilteredResult), ok: true, try: j })
+          console.log("3 apiFilteredResult", apiFilteredResult)
+
+        //if (j === keysArray.length && allApiResultsHelper.ok === false) res.status(400).json({ status: 400, message: "Expired key", ok: false, try: j })
+        if (j === keysArray.length && allApiResultsHelper.ok === false) res.status(400).json({ status: 400, message: arrayFromDB, ok: false, try: j })
+
+        else return res.status(200).json({ status: 200, message: arrayFromDB.concat(apiFilteredResult), ok: true, try: j })
         
-    }
-    catch (err) {
+    // }
+    // catch (err) {
       //console.log("api error", err.response.status)
       //console.log("api error", err)
       //console.log("api error", err.response.data.code) // 402
@@ -234,8 +128,9 @@ router.get('/recipes', async (req, res) => {
         
         //if (err.response.data.code === 402) res.status(400).json({ status: 400, message: "Expired key", ok: false })
         //else res.status(400).json({ status: 400, message: "Error", ok: false })
+        //res.status(400).json({ status: 400, message: "Error", ok: false })
         
-    }
+    // }
 });
 
 router.get('/recipes/:id', async (req, res) => {
@@ -341,8 +236,8 @@ router.post('/recipes', async (req, res) => {
 router.get('/diets', async (req, res) => { // THIS ROUTE ALWAYS RETURN DIETS.
   try {
     res.json(await Diets.bulkCreate([
-      { title: "All Diets", },
-      { title: "Gluten Free", },
+      { title: "All Diets" },
+      { title: "Gluten Free" },
       { title: "Ketogenic" },
       { title: "Vegan" },
       { title: "Lacto Ovo Vegetarian" },
@@ -361,6 +256,37 @@ router.get('/diets', async (req, res) => { // THIS ROUTE ALWAYS RETURN DIETS.
       else res.status(200).send(diets)
     } catch (e) {
       res.status(400).send('THERE ARE NOT AVAILABLE DIETS..')
+    }
+  }
+});
+
+router.get('/dishes', async (req, res) => { // THIS ROUTE ALWAYS RETURN DIETS.
+  try {
+    res.json(await Dishes.bulkCreate([
+      { title: "All Dishes" },
+      { title: "Side Dish" },
+      { title: "Lunch" },
+      { title: "Main course" },
+      { title: "Main dish" },
+      { title: "Dinner" },
+      { title: "Morning Meal" },
+      { title: "Brunch" },
+      { title: "Breakfast" },
+      { title: "Soup" },
+      { title: "Salad" },
+      { title: "Condiment" },
+      { title: "Dip" },
+      { title: "Sauce" },
+      { title: "Spread" }
+    ], {validate: true}))
+  }
+  catch(e) {
+    try {
+      const dishes = await Dishes.findAll()
+      if (dishes.length === 0) res.status(400).send("No dishes")
+      else res.status(200).send(dishes)
+    } catch (e) {
+      res.status(400).send('THERE ARE NOT AVAILABLE DISHES..')
     }
   }
 });
