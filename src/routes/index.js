@@ -4,13 +4,10 @@ const { Router } = require('express');
 const axios = require('axios');
 require('dotenv').config();
 const { CLD_NAME, CLD_KEY, CLD_SECRET, API_KEY1 , API_KEY2 , API_KEY3 , API_KEY4 , API_KEY5 } = process.env;
-const API_KEY = API_KEY1;
 const NUMBER = 1;
 const { Recipes , Diets , Dishes, Op } = require('../db.js');
 
 const router = Router();
-
-let keys = [ API_KEY1, API_KEY2 ]
 
 cloudinary.config({
   cloud_name: CLD_NAME,
@@ -18,11 +15,11 @@ cloudinary.config({
   api_secret: CLD_SECRET
 });
 
- let allApiResults = async (data) => {
+let allApiResults = async (data) => {
 
-   const apiRawData = await axios.get(`https://api.spoonacular.com/recipes/complexSearch?apiKey=${data.key}&number=${NUMBER}&addRecipeInformation=true`)
-       .then(res => { return res })
-       .catch(err => { return err })
+  const apiRawData = await axios.get(`https://api.spoonacular.com/recipes/complexSearch?apiKey=${data.key}&number=${NUMBER}&addRecipeInformation=true`)
+    .then(res => { return res })
+    .catch(err => { return err })
 
   //console.log("Response bad", apiRawData.response && apiRawData.response.status) // bad = 402
 
@@ -54,7 +51,7 @@ router.get('/recipes', async (req, res) => {
   const { title } = req.query;
 
   function ifTitleExists () {
-    return req.query.title ? { title: {[Op.like]: `%${req.query.title.toLowerCase()}%`}} : {}
+    return title ? { title: {[Op.like]: `%${req.query.title.toLowerCase()}%`}} : {}
   }
 
    // try {
@@ -62,46 +59,47 @@ router.get('/recipes', async (req, res) => {
           where:
           ifTitleExists()
           ,
-          include: [{
-            model: Diets,
-            attributes: ['title'],
-            through: {
-              attributes: []
+          include: [
+            {
+              model: Diets,
+              attributes: ['title'],
+              through: {
+                attributes: []
+              }
+            },
+            {
+              model: Dishes,
+              attributes: ['title'],
+              through: {
+                attributes: []
+              }
             }
-          }]
+          ]
         })
 
-        let dietsArray = searchDBRecipes.map(e => e.Diets).map(e => e.map(e => e.title))
-        //console.log("searchDBRecipes.map(e => e.Diets)", searchDBRecipes.map(e => e.Diets))
-        //console.log("dietsArray", dietsArray)
-
-        let arrayFromDB = []
-
-        dietsArray.map((e, i) => {
-          arrayFromDB.push({
-            id: searchDBRecipes[i].id,
-            title: searchDBRecipes[i].title,
-            image: searchDBRecipes[i].image,
-            healthScore: searchDBRecipes[i].healthScore,
-            summary: searchDBRecipes[i].summary,
-            analyzedInstructions: searchDBRecipes[i].analyzedInstructions,
-            userRecipe: searchDBRecipes[i].userRecipe,
-            diets: e,
-          })
+        let arrayFromDB = searchDBRecipes.map((e) => {
+          return {
+            id: e.id,
+            title: e.title,
+            image: e.image,
+            healthScore: e.healthScore,
+            summary: e.summary,
+            analyzedInstructions: e.analyzedInstructions,
+            userRecipe: e.userRecipe,
+            email: e.email,
+            dishes: e.Dishes.map(e => e.title),
+            diets: e.Diets.map(e => e.title)
+          }
         })
 
-        let allApiResultsHelper// = await allApiResults({ key: API_KEY1, try: 1 })
+        let allApiResultsHelper
 
-        console.log("1 allApiResultsHelper", allApiResultsHelper)
-        
-        //let keysArray = [ API_KEY1, API_KEY2, API_KEY3, API_KEY4, API_KEY5 ] // length 5
         let keysArray = [ API_KEY1, API_KEY2, API_KEY3, API_KEY4, API_KEY5 ] // length 5
 
         let j = 0
         
         do {
           allApiResultsHelper = await allApiResults({ key: keysArray[j], try: j + 1 })
-          console.log("2 allApiResultsHelper", allApiResultsHelper)
           j += 1
 
         } while (allApiResultsHelper.ok === false && allApiResultsHelper.message === 'Expired key' && j < keysArray.length )
@@ -111,20 +109,78 @@ router.get('/recipes', async (req, res) => {
           allApiResultsHelper.filter(e => e.title.toLowerCase().includes(req.query.title.toLowerCase())) :
           allApiResultsHelper;
 
-          console.log("3 apiFilteredResult", apiFilteredResult)
-
-        //if (j === keysArray.length && allApiResultsHelper.ok === false) res.status(400).json({ status: 400, message: "Expired key", ok: false, try: j })
         if (j === keysArray.length && allApiResultsHelper.ok === false) res.status(400).json({ status: 400, message: arrayFromDB, ok: false, try: j })
-
         else return res.status(200).json({ status: 200, message: arrayFromDB.concat(apiFilteredResult), ok: true, try: j })
         
     // }
     // catch (err) {
-      //console.log("api error", err.response.status)
       //console.log("api error", err)
-      //console.log("api error", err.response.data.code) // 402
-      //console.log("api error", err.response.data) // 402
-      
+        
+        //if (err.response.data.code === 402) res.status(400).json({ status: 400, message: "Expired key", ok: false })
+        //else res.status(400).json({ status: 400, message: "Error", ok: false })
+        //res.status(400).json({ status: 400, message: "Error", ok: false })
+        
+    // }
+});
+
+router.get('/test', async (req, res) => {
+  const { title } = req.query;
+
+  function ifTitleExists () {
+    return title ? { title: {[Op.like]: `%${req.query.title.toLowerCase()}%`}} : {}
+  }
+
+   // try {
+        const searchDBRecipes = await Recipes.findAll({
+          where:
+          ifTitleExists()
+          ,
+          include: [
+            {
+              model: Diets,
+              attributes: ['title'],
+              through: {
+                attributes: []
+              }
+            },
+            {
+              model: Dishes,
+              attributes: ['title'],
+              through: {
+                attributes: []
+              }
+            }
+          ]
+        })
+
+        //console.log("AAA", searchDBRecipes[0].dataValues)
+        //console.log("AAA", searchDBRecipes.map(e => e.Diets).map(e => e.map(e => e.title)).flat())
+        //console.log("AAA", searchDBRecipes.map(e => e.Diets).map(e => e.map(e => e.title)))
+        console.log("AAA", searchDBRecipes)
+        //console.log("AAA", searchDBRecipes.map(e => e.Diets).map(e => e.map(e => e.title).flat()))
+
+
+        let qq = searchDBRecipes.map((e) => {
+          return {
+            id: e.id,
+            title: e.title,
+            image: e.image,
+            healthScore: e.healthScore,
+            summary: e.summary,
+            analyzedInstructions: e.analyzedInstructions,
+            userRecipe: e.userRecipe,
+            email: e.email,
+            dishes: e.Dishes.map(e => e.title),
+            diets: e.Diets.map(e => e.title)
+          }
+        })
+
+
+        return res.status(200).json({ message: qq })
+        
+    // }
+    // catch (err) {
+      //console.log("api error", err)
         
         //if (err.response.data.code === 402) res.status(400).json({ status: 400, message: "Expired key", ok: false })
         //else res.status(400).json({ status: 400, message: "Error", ok: false })
@@ -144,13 +200,22 @@ router.get('/recipes/:id', async (req, res) => {
 
             if (apiFilteredResult[0] === undefined) {
                 findByIDinDB = await Recipes.findByPk(id, {
-                  include: [{
-                    model: Diets,
-                    attributes: ['title'],
-                    through: {
-                      attributes: []
-                    }
-                  }]
+                  include: [
+                    {
+                      model: Diets,
+                      attributes: ['title'],
+                      through: {
+                        attributes: []
+                      }
+                    }/* ,
+                    {
+                      model: Dishes,
+                      attributes: ['title'],
+                      through: {
+                        attributes: []
+                      }
+                    } */
+                  ]
                 })
                 let dietsArray = findByIDinDB.Diets.map(e => e.title)
                 let modifiedDBObj = {
@@ -177,7 +242,7 @@ router.post('/recipes', async (req, res) => {
 
   const {
     title, image, healthScore, summary,
-    diets, analyzedInstructions, email
+    dishes, diets, analyzedInstructions, email
   } = req.body;
 
   console.log("image",image)
@@ -187,12 +252,12 @@ router.post('/recipes', async (req, res) => {
       title.replaceAll(" ","").replaceAll("\n", "") === "" ||
       healthScore === "" ||
       summary.replaceAll(" ","").replaceAll("\n", "") === "" ||
+      dishes.length === 0 ||
       diets.length === 0 ||
       analyzedInstructions.map(e => e.replaceAll(" ","").replaceAll("\n","")).some(e => e === "") ||
       email.replaceAll(" ","").replaceAll("\n", "") === ""
     ) res.status(400).json({'status': 400})
     else {
-
         const createRecipe = await Recipes.create({
           title: title,
           healthScore: parseInt(healthScore),
@@ -205,12 +270,16 @@ router.post('/recipes', async (req, res) => {
       const relatedDiets = await Diets.findAll({
           where: { [Op.or]: [ { title: diets } ] }
       })
+      const relatedDishes = await Dishes.findAll({
+        where: { [Op.or]: [ { title: dishes } ] }
+      })
 
       createRecipe.addDiets(relatedDiets)
+      createRecipe.addDishes(relatedDishes)
 
       cloudinary.uploader.upload(image, { public_id: createRecipe.id, overwrite: true, invalidate: true })
       .then(async(res) => {
-        console.log("RES", res)
+        //console.log("RES", res)
         const updateRecipe = await Recipes.findOne({
           where: { id: createRecipe.id }
         });

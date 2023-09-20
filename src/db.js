@@ -24,15 +24,21 @@ let entries = Object.entries(sequelize.models);
 let capsEntries = entries.map((entry) => [entry[0][0].toUpperCase() + entry[0].slice(1), entry[1]]);
 sequelize.models = Object.fromEntries(capsEntries);
 
-const { Recipes , Diets } = sequelize.models;
+const { Recipes , Diets, Dishes } = sequelize.models;
 
-const Recipes_Diets = sequelize.define('Recipes_Diets', {
-}, {
+const Recipes_Diets = sequelize.define('Recipes_Diets', {}, {
   timestamps: false
 })
 
 Recipes.belongsToMany(Diets, { through: Recipes_Diets });
 Diets.belongsToMany(Recipes, { through: Recipes_Diets });
+
+const Recipes_Dishes = sequelize.define('Recipes_Dishes', {}, {
+  timestamps: false
+})
+
+Recipes.belongsToMany(Dishes, { through: Recipes_Dishes });
+Dishes.belongsToMany(Recipes, { through: Recipes_Dishes });
 
 module.exports = {
   ...sequelize.models,
