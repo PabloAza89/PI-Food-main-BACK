@@ -74,24 +74,27 @@ router.get('/recipes', async (req, res) => {
 router.delete('/delete', async (req, res) => {
   const { id, fd_tkn } = req.body; // food_token
   const { fd_ck_tkn } = req.cookies; // food_cookies_token
-  //console.log("email", email, "fd_tkn", fd_tkn, "fd_ck_tkn", fd_ck_tkn)
   console.log("fd_tkn", fd_tkn, "fd_ck_tkn", fd_ck_tkn)
 
-  //const deletedItem = await Recipes.destroy({ where: { id: 2 } });
   try {
-    //const deletedItem = await Recipes.destroy({ where: { id: 2 } });
-    const deletedItem = await Recipes.destroy({ where: { id: id } });
-    //console.log("deletedItem", deletedItem === 1);
-    //console.log("deletedItem", deletedItem === 1);
-    console.log("deletedItem", deletedItem); // 0 or 1
-    if (deletedItem === 0) return res.status(400).json({ status: 400, message: `0 item deleted`, ok: false })
-    if (deletedItem === 1) return res.status(200).json({ status: 200, message: `1 item deleted`, ok: true })
-
+    if (fd_ck_tkn !== undefined && fd_tkn !== undefined && fd_ck_tkn !== fd_tkn) {
+      res.clearCookie("fd_ck_tkn")
+      return res.status(400).json({ status: 400, message: `Invalid Credentials`, ok: false })
+    }
+    else if (fd_ck_tkn !== undefined || fd_tkn !== undefined) {
+      let checkUserResponse = await checkUser({ onlyCheck: true, res: res, fd_tkn: fd_tkn, fd_ck_tkn: fd_ck_tkn })
+      if (checkUserResponse.userValid) {
+        const deletedItem = await Recipes.destroy({ where: { id: id } });
+        if (deletedItem === 0) return res.status(400).json({ status: 400, message: `0 item deleted`, ok: false })
+        if (deletedItem === 1) return res.status(200).json({ status: 200, message: `1 item deleted`, ok: true })
+      } else {
+        res.clearCookie("fd_ck_tkn")
+        return res.status(400).json({ status: 400, message: `Invalid Credentials`, ok: false })
+      }
+    }
   } catch(e) {
     return res.status(400).json({'status': 400, 'error': e})
   }
-  
-
 });
 
 router.get('/recipes/:id', async (req, res) => {
@@ -157,11 +160,9 @@ router.post('/recipes', async (req, res) => {
       dishes.length === 0 ||
       diets.length === 0 ||
       analyzedInstructions.map(e => e.replaceAll(" ","").replaceAll("\n","")).some(e => e === "")
-    //) return res.status(400).json({'status': 400})
     ) return res.status(400).json({'status': 400})
     else if (fd_ck_tkn !== undefined && fd_tkn !== undefined && fd_ck_tkn !== fd_tkn) {
       res.clearCookie("fd_ck_tkn")
-      //return res.status(400).json({ status: 400, message: `Invalid Credentials`, ok: false })
       return res.status(400).json({ status: 400, message: `Invalid Credentials`, ok: false })
     }
     else if (fd_ck_tkn !== undefined || fd_tkn !== undefined) {
@@ -202,11 +203,9 @@ router.post('/recipes', async (req, res) => {
           await updateRecipe.save();
         })
         res.cookie('fd_ck_tkn', checkUserResponse.fd_ck_tkn ? fd_ck_tkn : fd_tkn, checkUserResponse.options)
-        //return res.status(200).json({ 'status': 200 })
         return res.status(200).json({ 'status': 200 })
       } else {
         res.clearCookie("fd_ck_tkn")
-        //return res.status(400).json({ status: 400, message: `Invalid Credentials`, ok: false })
         return res.status(400).json({ status: 400, message: `Invalid Credentials`, ok: false })
       }
     }
