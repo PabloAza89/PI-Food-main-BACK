@@ -1,7 +1,6 @@
 const cloudinary = require('cloudinary').v2
 const { Router } = require('express');
 const { allApiResults, checkUser } = require('../controller/controller');
-const axios = require('axios');
 require('dotenv').config();
 const { CLD_NAME, CLD_KEY, CLD_SECRET, API_KEY1 , API_KEY2 , API_KEY3 , API_KEY4 , API_KEY5 } = process.env;
 const { Recipes , Diets , Dishes, Op } = require('../db.js');
@@ -65,16 +64,33 @@ router.get('/recipes', async (req, res) => {
       allApiResultsHelper.filter(e => e.title.toLowerCase().includes(req.query.title.toLowerCase())) :
       allApiResultsHelper;
 
-    if (j === keysArray.length && allApiResultsHelper.ok === false) res.status(400).json({ status: 400, message: arrayFromDB, ok: false, try: j })
+    if (j === keysArray.length && allApiResultsHelper.ok === false) return res.status(400).json({ status: 400, message: arrayFromDB, ok: false, try: j })
     else return res.status(200).json({ status: 200, message: arrayFromDB.concat(apiFilteredResult), ok: true, try: j })
   } catch(e) {
-    res.status(400).json({'status': 400, 'error': e})
+    return res.status(400).json({'status': 400, 'error': e})
   }
 });
 
-router.delete('/detele', async (req, res) => {
-  const { title } = req.query;
+router.delete('/delete', async (req, res) => {
+  const { id, fd_tkn } = req.body; // food_token
+  const { fd_ck_tkn } = req.cookies; // food_cookies_token
+  //console.log("email", email, "fd_tkn", fd_tkn, "fd_ck_tkn", fd_ck_tkn)
+  console.log("fd_tkn", fd_tkn, "fd_ck_tkn", fd_ck_tkn)
 
+  //const deletedItem = await Recipes.destroy({ where: { id: 2 } });
+  try {
+    //const deletedItem = await Recipes.destroy({ where: { id: 2 } });
+    const deletedItem = await Recipes.destroy({ where: { id: id } });
+    //console.log("deletedItem", deletedItem === 1);
+    //console.log("deletedItem", deletedItem === 1);
+    console.log("deletedItem", deletedItem); // 0 or 1
+    if (deletedItem === 0) return res.status(400).json({ status: 400, message: `0 item deleted`, ok: false })
+    if (deletedItem === 1) return res.status(200).json({ status: 200, message: `1 item deleted`, ok: true })
+
+  } catch(e) {
+    return res.status(400).json({'status': 400, 'error': e})
+  }
+  
 
 });
 
@@ -121,7 +137,7 @@ router.get('/recipes/:id', async (req, res) => {
     }
 
   } catch (e) {
-    res.status(400).send('THERE ARE NOT RECIPES BY THAT ID.. :(')
+    return res.status(400).send('THERE ARE NOT RECIPES BY THAT ID.. :(')
   }
 });
 
@@ -141,9 +157,11 @@ router.post('/recipes', async (req, res) => {
       dishes.length === 0 ||
       diets.length === 0 ||
       analyzedInstructions.map(e => e.replaceAll(" ","").replaceAll("\n","")).some(e => e === "")
+    //) return res.status(400).json({'status': 400})
     ) return res.status(400).json({'status': 400})
     else if (fd_ck_tkn !== undefined && fd_tkn !== undefined && fd_ck_tkn !== fd_tkn) {
       res.clearCookie("fd_ck_tkn")
+      //return res.status(400).json({ status: 400, message: `Invalid Credentials`, ok: false })
       return res.status(400).json({ status: 400, message: `Invalid Credentials`, ok: false })
     }
     else if (fd_ck_tkn !== undefined || fd_tkn !== undefined) {
@@ -184,14 +202,17 @@ router.post('/recipes', async (req, res) => {
           await updateRecipe.save();
         })
         res.cookie('fd_ck_tkn', checkUserResponse.fd_ck_tkn ? fd_ck_tkn : fd_tkn, checkUserResponse.options)
+        //return res.status(200).json({ 'status': 200 })
         return res.status(200).json({ 'status': 200 })
       } else {
         res.clearCookie("fd_ck_tkn")
+        //return res.status(400).json({ status: 400, message: `Invalid Credentials`, ok: false })
         return res.status(400).json({ status: 400, message: `Invalid Credentials`, ok: false })
       }
     }
   } catch(e) {
-    res.status(400).json({'status': 400, 'error': e})
+    //res.status(400).json({'status': 400, 'error': e})
+    return res.status(400).json({'status': 400, 'error': e})
   }
 });
 
@@ -245,10 +266,10 @@ router.get('/dishes', async (req, res) => { // THIS ROUTE ALWAYS RETURN DISHES.
   catch(e) {
     try {
       const dishes = await Dishes.findAll()
-      if (dishes.length === 0) res.status(400).send("No dishes")
-      else res.status(200).send(dishes)
+      if (dishes.length === 0) return res.status(400).send("No dishes")
+      else return res.status(200).send(dishes)
     } catch (e) {
-      res.status(400).send('THERE ARE NOT AVAILABLE DISHES..')
+      return res.status(400).send('THERE ARE NOT AVAILABLE DISHES..')
     }
   }
 });
