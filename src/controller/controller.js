@@ -6,8 +6,6 @@ const allApiResults = async (props) => {
     .then(res => { return res })
     .catch(err => { return err })
 
-  //console.log("Response bad", apiRawData.response && apiRawData.response.status) // bad = 402
-
   if (apiRawData.response && apiRawData.response.status === 402) return { status: 402, message: "Expired key", ok: false, try: props.try }
   else return apiRawData.data && apiRawData.data.results.map(e => {
     return {
@@ -45,73 +43,40 @@ const checkUser = async (props) => {
       let response = await axios.get(`https://www.googleapis.com/oauth2/v3/userinfo?access_token=${props.fd_ck_tkn}`)
         .then(res => { return res })
         .catch(err => { return err })
-      console.log("PASO POR ACA 1")
-      //console.log("response.data", response.data)
-      //console.log("response.dataaa", response)
       if (response.data && response.data.email !== undefined) {
-        console.log("ESTE A")
         return {
           userValid: true,
+          fd_ck_tkn: true,
           fd_tkn: false,
-          fd_ck_tkn: props.fd_ck_tkn,
           email: response.data.email,
           options: options
         }
-      } else {
-        console.log("ESTE B")
-        return { userValid: false }
-      }
-
+      } else return { userValid: false }
     } else if (props.fd_tkn !== undefined) {
       let response = await axios.get(`https://www.googleapis.com/oauth2/v3/userinfo?access_token=${props.fd_tkn}`)
-      console.log("PASO POR ACA 2")
       if (response.data && response.data.email !== undefined) {
         return {
           userValid: true,
-          fd_tkn: props.fd_tkn,
           fd_ck_tkn: false,
+          fd_tkn: true,
           email: response.data.email,
           options: options
         }
-      } else {
-        return { userValid: false }
-      }
+      } else return { userValid: false }
     }
-    
   } else {
     if (props.fd_ck_tkn && !props.fd_tkn) {
       let response = await axios.get(`https://www.googleapis.com/oauth2/v3/userinfo?access_token=${props.fd_ck_tkn}`)
-      //.catch(err => {throw err})
-  
       if (response.data.email !== undefined) {
-        //console.log("response.data", response.data)
         props.res.cookie('fd_ck_tkn', props.fd_ck_tkn, options)
         return props.res.status(200).json({ email: response.data.email, fd_tkn: props.fd_ck_tkn, status: 200 })
       }
     }
-  
-    if (!props.fd_ck_tkn && props.fd_tkn) { // food_cookie_token // food_token
+    else if (!props.fd_ck_tkn && props.fd_tkn) { // food_cookie_token // food_token
       props.res.cookie('fd_ck_tkn', props.fd_tkn, options)
       return props.res.status(200).json({ status: 200 })
     }
-
   }
-
-  // if (data.fd_ck_tkn && !data.fd_tkn) {
-  //   let response = await axios.get(`https://www.googleapis.com/oauth2/v3/userinfo?access_token=${data.fd_ck_tkn}`)
-  //   //.catch(err => {throw err})
-
-  //   if (response.data.email !== undefined) {
-  //     data.res.cookie('fd_ck_tkn', data.fd_ck_tkn, options)
-  //     return data.res.status(200).json({ email: response.data.email, fd_tkn: data.fd_ck_tkn, status: 200 })
-  //   }
-  // }
-
-  // if (!data.fd_ck_tkn && data.fd_tkn) { // food_cookie_token // food_token
-  //   data.res.cookie('fd_ck_tkn', data.fd_tkn, options)
-  //   return data.res.status(200).json({ status: 200 })
-  // }
-
 }
 
 module.exports = { allApiResults, checkUser }
