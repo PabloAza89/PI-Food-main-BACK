@@ -153,27 +153,9 @@ router.put('/recipe', async (req, res) => {
         console.log("updatedItem", updatedItem[0])
         console.log("updatedItem 2", updatedItem)
 
-
-
-        // const recipeFound = await Recipes.findOne({
-        //   where: { [Op.or]: [ { id: id } ] }
-        //   //include: Dishes
-        // })
-
-        // const nonExistingPreviousDishes = await Dishes.findAll({
-        //   //where: { [Op.or]: [ { title: dishes } ] }
-        //   //where: { [Op.or]: [ { title: dishes } ] }
-        //   //where: { [Op.or]: [ { title: ["Side Dish", "Lunch", "Main Course"] } ] }
-        //   //where: { [Op.or]: [ { title: ["Side Dish", "Lunch", "Main Course"] } ] }
-        //   where: { [Op.or]: [ { title: ["Side Dish", "Lunch", "Main Course", "Main Dish"] } ] }
-        // }).then((existingDishes) => {
-        //   return dishes.filter(e => !existingDishes.map(x => x.title).includes(e))
-        // })
-
-        // const relatedDishes = await Dishes.findAll({
-        //   where: { [Op.or]: [ { title: dishes } ] }
-        //   //where: { [Op.or]: [ { title: ["Side Dish", "Lunc", "Main Course", "Main Dish"] } ] }
-        // })
+        const recipeFound = await Recipes.findOne({
+          where: { [Op.or]: [ { id: id } ] }
+        })
 
         const relatedDishes = await Recipes.findOne({
           where: { id: id },
@@ -184,139 +166,56 @@ router.put('/recipe', async (req, res) => {
             }
           ]
         }).then((response) => {
-          //console.log("RESPON", response)
-          return response.Dishes.map((e) =>  {return{ id:e.id, title: e.title}} )
+          return response.Dishes.map((e) =>  { return { id: e.id, title: e.title }} )
         })
-        .then((existingDishes) => {
-          //return dishes.filter(e => !existingDishes.map(x => x.title).includes(e))
-          db.filter(item => { return !neww.map(r => r.title).includes(item) }) // ARRAY TO DELETE
+        .then(async (existingDishes) => {
+
+          const dishesFound = await Dishes.findAll({
+            where: { title: dishes }
+          }).then(res => { return res.map((e) =>  { return { id: e.id, title: e.title }}) })
+
+          let resultParsed = []
+          existingDishes.map(async(e) => {
+            if (dishes.map(f => f).includes(e.title) === true) resultParsed.push({ ...e, toDelete: false, toAdd: false }) // ALREADY EXISTS
+            else if (dishes.map(f => f).includes(e.title) === false) resultParsed.push({ ...e, toDelete: true, toAdd: false }) // TO DELETE
+          })
+
+          console.log("A VER", dishesFound)
+
+          dishes.filter((e) => {
+            if ( existingDishes.map(f => f.title).includes(e) === false) {
+
+              //console.log("A VER", dishesFound.filter(g => g.title === e))
+              
+
+              //let dishID = dishesFound.filter(g => g.title === e)[0].id
+              //resultParsed.push({ id: dishID, title: e, toDelete: false, toAdd: true }) // NEW !
+              //resultParsed.push({ id: 0, title: e, toDelete: false, toAdd: true }) // NEW !
+              resultParsed.push({ id: 0, title: e, toDelete: false, toAdd: true }) // NEW !
+            }
+          })
+
+          return resultParsed
+
         })
 
-
-        //console.log("QQQ QQQ", qqq.title)
-        //console.log("QQQ QQQ", qqq.Dishes[0].title)
-        //console.log("QQQ QQQ", qqq.Dishes[0].id)
-        //console.log("QQQ QQQ", qqq.Dishes[0])
-        //console.log("QQQ QQQ", qqq[0].Recipes_Dishes)
-        //console.log("QQQ QQQ", qqq.Dishes)
-
-        //console.log("QQQ QQQ", qqq.Dishes[0].Recipes_Dishes)
-        // console.log("QQQ QQQ", 
-        //   //qqq.Dishes.map(e => e.title)
-        //   qqq.Dishes.map((e) => { return {id:e.id, title: e.title} })
-        // )
-        
         console.log("QQQ QQQ", relatedDishes)
-        //console.log("QQQ QQQ", qqq.Dishes)
 
-        //console.log("DISHES DISHES", relatedDishes[0].id)
-        //console.log("DISHES DISHES", relatedDishes[0].title)
-        //console.log("DISHES DISHES", relatedDishes)
-        //console.log("DISHES DISHES", relatedDishes.length)
+        if (relatedDishes.length > 0) {
+          relatedDishes.map(e => {
+            if (e.toDelete) {
+              //Recipes.findAll({ where: { id: id } })
+              recipeFound
+              .then((res) => {
+                return Dishes.destroy({ where: { id: e.id } });
+               })
+            }
+            else if (e.toAdd) {
+              recipeFound.addDishes(e.id)
+            }
+          })
+        }
 
-        // if (relatedDishes.length > 0) {
-        //   relatedDishes.forEach((e) => {
-        //     recipeFound.hasDishes(e.id).then((response) => {
-        //     //test.hasDishes(dishes).then((res) => {
-        //       if (response === true) console.log("true", e.id, e.title)
-        //       //else console.log("false", e.id, e.title)
-        //       else {
-        //         //console.log("false", e.id, e.title)
-        //         recipeFound.addDishes(e)
-        //       }
-        //     }).catch((err) => {
-        //       //console.log("ERR ERR", err)
-        //       console.log("SOME ERROR")
-        //     })
-        //   })
-        // } else {
-        //   console.log("NO DISHES RELATED FOUND") // NO MATCHES BECAUSE SOME ERROR..
-        // }
-
-        //recipeFound
-
-
-        //console.log("DISHES DISHES", dishes.filter(e => !existingDiets.map(x => x.title).includes(e)))
-
-        //  const rrelatedDishes = await Dishes.findAll({
-        //   where: { [Op.or]: [ { title: dishes } ] }
-        // })
-
-        //let qq = ["Side Dish", "Lunch", "Main Course", "Main Dish", "Dinner"]
-        // dishes
-
-        //let toFilter = ["Lunch", "Main Course"]
-
-        
-          //let toAdd = dishes.filter(e => !existingDiets.includes(e))
-          //let toAdd = dishes.filter(e => existingDiets.map(r => !r.title.includes(e)))
-
-          //console.log("DISHES DISHES", existingDiets[0])
-          
-
-          //qq.filter(item => !toFilter.map(r => r.title).includes(item))
-          //dishes.filter(e => !existingDiets.map(x => x.title).includes(e))
-          
-          
-
-          //console.log("DISHES DISHES", existingDiets[0].title)
-
-
-          //console.log("DISHES DISHES", toAdd)
-        
-
-        //console.log("test test", test[0].id)
-        //console.log("test test", test.length)
-        //console.log("test test", test.length === dishes.length)
-        //console.log("test test", dishes[0])
-
-
-
-        //console.log("test test", test)
-        //console.log("rrelatedDishes rrelatedDishes", dishes)
-        //console.log("dishes dishes", dishes)
-
-        //if (test.length > 0) {
-        //if (test.length > 0 && test.length === dishes.length) {
-        // if (test.length > 0) { // test.length > 0 === THAT ARE THE SAME
-        //   test.forEach((e) => {
-        //     recipeFound.hasDishes(e.id).then((res) => {
-        //     //test.hasDishes(dishes).then((res) => {
-        //       //console.log("RES RES", res)
-        //       console.log("TRUE", e.title)
-        //     }).catch((err) => {
-        //       //console.log("ERR ERR", err)
-        //       console.log("FALSE", e.title)
-        //     })
-        //   })
-        // } else {
-        //   console.log("NO DISHES RELATED FOUND") // NO MATCHES BECAUSE SOME ERROR..
-        // }
-
-        
-        // test.hasDishes("e2d56595-f8d5-4890-a651-1998e71618e1").then((res) => {
-        // //test.hasDishes(dishes).then((res) => {
-        //   //console.log("RES RES", res)
-        //   console.log("TRUE")
-        // }).catch((err) => {
-        //   //console.log("ERR ERR", err)
-        //   console.log("FALSE")
-        // })
-
-        //console.log("rrelatedDishes", rrelatedDishes)
-
-        //  const testing = await Recipes.findAll({
-        //   where: { [Op.or]: [ { id: id } ] }
-        // })
-
-        // testing.addDishes(rrelatedDishes)
-
-
-        // const updatedDish = await Dishes.update(
-        //   { id: rrelatedDishes },
-        //   { where: { id: id }}
-        // );
-        
 
         if (updatedItem[0] === 1) return res.status(200).json({ status: 200, message: `1 item updated`, ok: true })
       } else {
