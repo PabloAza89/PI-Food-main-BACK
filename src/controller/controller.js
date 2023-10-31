@@ -38,6 +38,22 @@ const checkUser = async (props) => {
     httpOnly: true
   }
 
+  if (props.overwrite && props.fd_tkn) {
+    let response = await axios.get(`https://www.googleapis.com/oauth2/v3/userinfo?access_token=${props.fd_tkn}`)
+      if (response.data.email !== undefined) { // edit
+        console.log("ENTRO ACA overwrite ok")
+        //console.log("ENTRO ACA 5 1", props.fd_tkn)
+        //props.res.cookie('fd_ck_tkn', props.fd_tkn, options)
+        props.res.cookie('fd_ck_tkn', props.fd_tkn, options)
+        return props.res.status(200).json({ email: response.data.email, fd_tkn: props.fd_tkn, status: 200 })
+        //return props.res.cookie('fd_ck_tkn', props.fd_tkn, options).status(200).json({ email: response.data.email, fd_tkn: props.fd_tkn, status: 200 })
+      } else {
+        console.log("ENTRO ACA overwrite error    ")
+        props.res.clearCookie("fd_ck_tkn")
+        return props.res.status(400).json({ status: 400, message: `Invalid Credentials`, ok: false })
+      }
+  }
+
   if (props.onlyCheck) {
     //if (props.fd_ck_tkn !== undefined && props.fd_tkn !== undefined && props.fd_ck_tkn !== props.fd_tkn) return { userValid: false }
     if (props.fd_ck_tkn !== undefined) {
@@ -66,35 +82,64 @@ const checkUser = async (props) => {
         }
       } else return { userValid: false }
     }
-  } else {
+  } else { // THIS HANDLER SET USER, UPPER ONLY CHECK IF USER IS VALID
     //console.log("props.fd_ck_tkn", props.fd_ck_tkn)
     //console.log("props.fd_tkn", props.fd_tkn === '')
-    if (props.fd_ck_tkn && !props.fd_tkn || props.fd_ck_tkn && props.fd_tkn) {
+    if (props.fd_ck_tkn && !props.fd_tkn || (props.fd_ck_tkn && props.fd_tkn && props.fd_ck_tkn === props.fd_tkn)) {
       
       let response = await axios.get(`https://www.googleapis.com/oauth2/v3/userinfo?access_token=${props.fd_ck_tkn}`)
-      if (response.data.email !== undefined) { // edit
+      if (response.data.email !== undefined) { // VALID USER
         console.log("ENTRO ACA 1")
         props.res.cookie('fd_ck_tkn', props.fd_ck_tkn, options)
         return props.res.status(200).json({ email: response.data.email, fd_tkn: props.fd_ck_tkn, status: 200 })
-      } else {
+      } else { // NOT VALID USER
         console.log("ENTRO ACA 2")
         props.res.clearCookie("fd_ck_tkn")
         return props.res.status(400).json({ status: 400, message: `Invalid Credentials`, ok: false })
       }
     }
+    else if ((props.fd_ck_tkn && props.fd_tkn && props.fd_ck_tkn !== props.fd_tkn)) {
+      
+      let response = await axios.get(`https://www.googleapis.com/oauth2/v3/userinfo?access_token=${props.fd_tkn}`)
+      if (response.data.email !== undefined) { // edit
+        console.log("ENTRO ACA 3")
+        props.res.cookie('fd_ck_tkn', props.fd_tkn, options)
+        return props.res.status(200).json({ email: response.data.email, fd_tkn: props.fd_tkn, status: 200 })
+      } else {
+        console.log("ENTRO ACA 4")
+        props.res.clearCookie("fd_ck_tkn")
+        return props.res.status(400).json({ status: 400, message: `Invalid Credentials`, ok: false })
+      }
+    }
     else if (!props.fd_ck_tkn && props.fd_tkn) { // food_cookie_token // food_token
-      console.log("ENTRO ACA 3")
-      props.res.cookie('fd_ck_tkn', props.fd_tkn, options)
-      return props.res.status(200).json({ status: 200 })
+      console.log("ENTRO ACA 5")
+
+      let response = await axios.get(`https://www.googleapis.com/oauth2/v3/userinfo?access_token=${props.fd_tkn}`)
+      if (response.data.email !== undefined) { // edit
+        console.log("ENTRO ACA 5 1")
+        //console.log("ENTRO ACA 5 1", props.fd_tkn)
+        //props.res.cookie('fd_ck_tkn', props.fd_tkn, options)
+        props.res.cookie('fd_ck_tkn', props.fd_tkn, options)
+        return props.res.status(200).json({ email: response.data.email, fd_tkn: props.fd_tkn, status: 200 })
+        //return props.res.cookie('fd_ck_tkn', props.fd_tkn, options).status(200).json({ email: response.data.email, fd_tkn: props.fd_tkn, status: 200 })
+      } else {
+        console.log("ENTRO ACA 5 2")
+        props.res.clearCookie("fd_ck_tkn")
+        return props.res.status(400).json({ status: 400, message: `Invalid Credentials`, ok: false })
+      }
+
+
+      // props.res.cookie('fd_ck_tkn', props.fd_tkn, options)
+      // return props.res.status(200).json({ status: 200 })
     }
     else if (!props.fd_ck_tkn && !props.fd_tkn) { // food_cookie_token // food_token
-      console.log("ENTRO ACA 4")
+      console.log("ENTRO ACA 6")
       //props.res.cookie('fd_ck_tkn', props.fd_tkn, options)
       //return props.res.status(200).json({ status: 200 })
       return props.res.status(400).json({ status: 400, message: `User not logged`, ok: false })
     }
     else {
-      console.log("ENTRO ACA 5")
+      console.log("ENTRO ACA 7")
       //res.clearCookie("fd_ck_tkn")
       return props.res.status(400).json({ status: 400, message: `Logging error`, ok: false })
     }

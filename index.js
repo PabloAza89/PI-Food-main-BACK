@@ -8,3 +8,7 @@ conn.sync({ force: false }).then(() => {
     console.log(`OK! LISTENING AT PORT ${port} :)`); // eslint-disable-line no-console
   });
 });
+
+// conn.sync({ force: false }).then(() => {
+//   server.listen(port, "0.0.0.0");
+// });

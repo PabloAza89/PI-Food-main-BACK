@@ -2,14 +2,44 @@
 //let db = ["Side Dish", "Lunch", "Main Course"]
 //let db = ["Cena", "Tarde", "Lunchs"]
 let qq = [
-  { id: '012e621f-011e-48b6-be18-a80ad48e607e', title: 'Side Dish' },
-  { id: '3434b4ec-a33a-49a8-ac98-d660ce8114bd', title: 'Lunch' },
-  { id: 'e2d56595-f8d5-4890-a651-1998e71618e1', title: 'Main Course' },
-  { id: 'b3ac7941-028e-4778-998f-7b3d8e1550dc', title: 'Main Dish' }
+  {
+    id: '670c886d-dca6-4507-be41-cac9d5bccd48',
+    title: 'Side Dish',
+    toDelete: false,
+    toAdd: false
+  },
+  {
+    id: 'ee795fd7-899b-4e36-a14b-ccfbf8ac48d2',
+    title: 'Main Course',
+    toDelete: false,
+    toAdd: false
+  },
+  {
+    id: '5dedb72b-bbfe-4865-b408-31a371e3d54e',
+    title: 'Lunch',
+    toDelete: false,
+    toAdd: true
+  },
+  {
+    id: 'ndedb72b-bbfe-4865-b408-31a371e3d54e',
+    title: 'Test',
+    toDelete: true,
+    toAdd: false
+  },
+  {
+    id: 'ydedb72b-bbfe-4865-b408-31a371e3d54e',
+    title: 'Test 2',
+    toDelete: true,
+    toAdd: false
+  }
 ]
+
+//let ww = qq.filter(e => (!e.toDelete && !e.toAdd || !e.toDelete && e.toAdd))
 
 console.log(
   //resultParsed
-  qq.filter(e => e.title === "Main Dish")[0]
+  //qq.map(e => {if( !e.toDelete && !e.toAdd || !e.toDelete && e.toAdd ) return e.id} )
+  //ww
+  qq.map(e => {if(!e.toDelete && !e.toAdd || !e.toDelete && e.toAdd) return e.id}).filter(e => e !== undefined)
 
 )

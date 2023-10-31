@@ -14,11 +14,9 @@ cloudinary.config({
 });
 
 router.get('/recipes', async (req, res) => {
-  const { title } = req.query;
 
   try {
     const searchDBRecipes = await Recipes.findAll({
-      where: title ? { title: {[Op.like]: `%${req.query.title.toLowerCase()}%`}} : {},
       include: [
         {
           model: Diets,
@@ -50,6 +48,9 @@ router.get('/recipes', async (req, res) => {
 
     let allApiResultsHelper
 
+    let API_KEY9 = 2323
+
+    //let keysArray = [ API_KEY9, API_KEY9, API_KEY9, API_KEY9, API_KEY9 ] // length 5
     let keysArray = [ API_KEY1, API_KEY1, API_KEY1, API_KEY1, API_KEY1 ] // length 5
     //let keysArray = [ API_KEY1, API_KEY2, API_KEY3, API_KEY4, API_KEY5 ] // length 5
 
@@ -109,9 +110,7 @@ router.put('/recipe', async (req, res) => {
   console.log("EN PUT SERVER")
   console.log("IMAGE", image === "")
 
-  // function checkImage() {
-  //   if (image !== "") return image: image
-  // }
+  //console.log("diets diets", diets)
 
   try {
     if (fd_ck_tkn && fd_tkn && fd_ck_tkn !== fd_tkn) {
@@ -150,8 +149,6 @@ router.put('/recipe', async (req, res) => {
           },
           { where: { id: id } }
         );
-        console.log("updatedItem", updatedItem[0])
-        console.log("updatedItem 2", updatedItem)
 
         const recipeFound = await Recipes.findOne({
           where: { [Op.or]: [ { id: id } ] }
@@ -169,7 +166,6 @@ router.put('/recipe', async (req, res) => {
           return response.Dishes.map((e) =>  { return { id: e.id, title: e.title }} )
         })
         .then(async (existingDishes) => {
-
           const dishesFound = await Dishes.findAll({
             where: { title: dishes }
           }).then(res => { return res.map((e) =>  { return { id: e.id, title: e.title }}) })
@@ -180,39 +176,65 @@ router.put('/recipe', async (req, res) => {
             else if (dishes.map(f => f).includes(e.title) === false) resultParsed.push({ ...e, toDelete: true, toAdd: false }) // TO DELETE
           })
 
-          console.log("A VER", dishesFound)
-
           dishes.filter((e) => {
             if ( existingDishes.map(f => f.title).includes(e) === false) {
-
-              //console.log("A VER", dishesFound.filter(g => g.title === e))
-              
-
-              //let dishID = dishesFound.filter(g => g.title === e)[0].id
-              //resultParsed.push({ id: dishID, title: e, toDelete: false, toAdd: true }) // NEW !
-              //resultParsed.push({ id: 0, title: e, toDelete: false, toAdd: true }) // NEW !
-              resultParsed.push({ id: 0, title: e, toDelete: false, toAdd: true }) // NEW !
+              let dishID = dishesFound.filter(g => g.title === e)[0].id // RETRIEVES ID OF NEW DISH
+              resultParsed.push({ id: dishID, title: e, toDelete: false, toAdd: true }) // PUSH NEW !
             }
           })
-
           return resultParsed
-
         })
 
-        console.log("QQQ QQQ", relatedDishes)
+        //console.log("A VER", dishesFound)
+        //console.log("updatedItem", updatedItem[0])
+        //console.log("updatedItem 2", updatedItem)
+        //console.log("RELATED DISHES", relatedDishes)
 
         if (relatedDishes.length > 0) {
           relatedDishes.map(e => {
-            if (e.toDelete) {
-              //Recipes.findAll({ where: { id: id } })
-              recipeFound
-              .then((res) => {
-                return Dishes.destroy({ where: { id: e.id } });
-               })
+            if (e.toDelete) recipeFound.removeDishes(e.id)
+            if (e.toAdd) recipeFound.addDishes(e.id)
+          })
+        }
+
+        const relatedDiets = await Recipes.findOne({
+          where: { id: id },
+          include: [
+            {
+              model: Diets,
+              attributes: [ 'id', 'title' ],
             }
-            else if (e.toAdd) {
-              recipeFound.addDishes(e.id)
+          ]
+        }).then((response) => {
+          return response.Diets.map((e) =>  { return { id: e.id, title: e.title }} )
+        })
+        .then(async (existingDiets) => {
+          const dietsFound = await Diets.findAll({
+            where: { title: diets }
+          }).then(res => { return res.map((e) =>  { return { id: e.id, title: e.title }}) })
+
+          let resultParsed = []
+          existingDiets.map(async(e) => {
+            if (diets.map(f => f).includes(e.title) === true) resultParsed.push({ ...e, toDelete: false, toAdd: false }) // ALREADY EXISTS
+            else if (diets.map(f => f).includes(e.title) === false) resultParsed.push({ ...e, toDelete: true, toAdd: false }) // TO DELETE
+          })
+
+          diets.filter((e) => {
+            if ( existingDiets.map(f => f.title).includes(e) === false) {
+              let dietsID = dietsFound.filter(g => g.title === e)[0].id // RETRIEVES ID OF NEW DIET
+              resultParsed.push({ id: dietsID, title: e, toDelete: false, toAdd: true }) // PUSH NEW !
             }
+          })
+          console.log("A VER", dietsFound)
+          return resultParsed
+        })
+
+        console.log("relatedDiets", relatedDiets)
+
+        if (relatedDiets.length > 0) {
+          relatedDiets.map(e => {
+            if (e.toDelete) recipeFound.removeDiets(e.id)
+            if (e.toAdd) recipeFound.addDiets(e.id)
           })
         }
 
@@ -226,53 +248,6 @@ router.put('/recipe', async (req, res) => {
   } catch(err) {
     //return res.status(400).json({'status': 400, 'error': e})
     return res.status(400).json({ status: 400, message: err, ok: false })
-  }
-});
-
-router.get('/recipes/:id', async (req, res) => {
-  const { id } = req.params;
-  var findByIDinDB;
-
-  try {
-    let allApiResultsHelper = await allApiResults()
-    const apiFilteredResult = allApiResultsHelper.filter(e => e.id === id);
-
-    if (apiFilteredResult[0] === undefined) {
-      findByIDinDB = await Recipes.findByPk(id, {
-        include: [
-          {
-            model: Diets,
-            attributes: ['title'],
-            through: {
-              attributes: []
-            }
-          }/* ,
-          {
-            model: Dishes,
-            attributes: ['title'],
-            through: {
-              attributes: []
-            }
-          } */
-        ]
-      })
-      let dietsArray = findByIDinDB.Diets.map(e => e.title)
-      let modifiedDBObj = {
-        id: findByIDinDB.id,
-        title: findByIDinDB.title,
-        summary: findByIDinDB.summary,
-        healthScore: findByIDinDB.healthScore,
-        analyzedInstructions: findByIDinDB.analyzedInstructions,
-        diets: dietsArray
-      }
-      return res.status(200).send(modifiedDBObj)
-
-    } else {
-        res.status(200).send(apiFilteredResult)
-    }
-
-  } catch (e) {
-    return res.status(400).send('THERE ARE NOT RECIPES BY THAT ID.. :(')
   }
 });
 
@@ -392,9 +367,11 @@ router.get('/dishes', async (req, res) => { // THIS ROUTE ALWAYS RETURN DISHES.
       { title: "Dip" },
       { title: "Sauce" },
       { title: "Spread" }
-    ], {validate: true}))
+    //], { validate: true, updateOnDuplicate: ["title"] }))
+    ], { validate: true }))
   }
   catch(e) {
+    //console.log("SOME ERRORRR")
     try {
       const dishes = await Dishes.findAll()
       if (dishes.length === 0) return res.status(400).send("No dishes")
@@ -406,14 +383,12 @@ router.get('/dishes', async (req, res) => { // THIS ROUTE ALWAYS RETURN DISHES.
 });
 
 router.post('/user', async (req, res) => {
-  const { email, fd_tkn } = req.body;
+  const { email, fd_tkn, overwrite } = req.body;
   const { fd_ck_tkn } = req.cookies;
-  console.log("email", email, "fd_tkn", fd_tkn, "fd_ck_tkn", fd_ck_tkn)
-  console.log("ENTRO EN POST USER")
-
+  console.log("ENTRO EN POST USER email", email, "fd_tkn", fd_tkn, "fd_ck_tkn", fd_ck_tkn)
 
   try {
-    return await checkUser({ res: res, fd_ck_tkn: fd_ck_tkn, fd_tkn: fd_tkn })
+    return await checkUser({ res, fd_ck_tkn, fd_tkn, overwrite })
     //let response = await checkUser({ onlyCheck: false, res: res, fd_ck_tkn: fd_ck_tkn, fd_tkn: fd_tkn })
     //console.log("RESPONSE", response)
   } catch(err) {
