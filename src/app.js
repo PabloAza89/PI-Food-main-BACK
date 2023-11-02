@@ -15,7 +15,7 @@ server.use(cookieParser());
 server.use((req, res, next) => {
   //res.header('Access-Control-Allow-Origin', '*'); // update to match the domain you will make the request from //
   //res.header('Access-Control-Allow-Origin', 'http://localhost:3000'); // update to match the domain you will make the request from //
-  res.header('Access-Control-Allow-Origin', 'https://pabloaza89.github.io/'); // update to match the domain you will make the request from //
+  res.header('Access-Control-Allow-Origin', 'https://pabloaza89.github.io'); // update to match the domain you will make the request from //
   //res.header('Access-Control-Allow-Origin', 'http://192.168.0.164:3000'); // update to match the domain you will make the request from //
   //res.header('Access-Control-Allow-Origin', 'http://127.0.0.1:3000'); // update to match the domain you will make the request from //
   //res.header('Access-Control-Allow-Origin', '*'); // update to match the domain you will make the request from //

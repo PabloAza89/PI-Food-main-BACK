@@ -260,13 +260,21 @@ router.post('/recipe', async (req, res) => {
   console.log("email", email, "fd_tkn", fd_tkn, "fd_ck_tkn", fd_ck_tkn)
 
   try {
+    // if (
+    //   title.replaceAll(" ","").replaceAll("\n", "") === "" || // .replaceAll DON'T WORK IN SOME SERVERS !
+    //   healthScore === "" ||                                   // REPLACED WITH RegExp/g & .replace
+    //   summary.replaceAll(" ","").replaceAll("\n", "") === "" ||
+    //   dishes.length === 0 ||
+    //   diets.length === 0 ||
+    //   analyzedInstructions.map(e => e.replaceAll(" ","").replaceAll("\n","")).some(e => e === "")
+    // ) return res.status(400).json({'status': 400})
     if (
-      title.replaceAll(" ","").replaceAll("\n", "") === "" ||
+      title.replace(/ /g, "").replace(/\n/g, "") === "" ||
       healthScore === "" ||
-      summary.replaceAll(" ","").replaceAll("\n", "") === "" ||
+      summary.replace(/ /g, "").replace(/\n/g, "") === "" ||
       dishes.length === 0 ||
       diets.length === 0 ||
-      analyzedInstructions.map(e => e.replaceAll(" ","").replaceAll("\n","")).some(e => e === "")
+      analyzedInstructions.map(e => e.replace(/ /g, "").replace(/\n/g, "")).some(e => e === "")
     ) return res.status(400).json({'status': 400})
     else if (fd_ck_tkn !== undefined && fd_tkn !== undefined && fd_ck_tkn !== fd_tkn) {
       res.clearCookie("fd_ck_tkn")
