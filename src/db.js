@@ -41,7 +41,7 @@ Recipes.belongsToMany(Dishes, { through: Recipes_Dishes });
 Dishes.belongsToMany(Recipes, { through: Recipes_Dishes });
 
 module.exports = {
-  ...sequelize.models,
+  ...sequelize.models, // NO error here..
   conn: sequelize,
   Op
 };
