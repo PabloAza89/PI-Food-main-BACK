@@ -50,8 +50,8 @@ router.get('/recipes', async (req, res) => {
 
     let API_KEY9 = 2323
 
-    //let keysArray = [ API_KEY9, API_KEY9, API_KEY9, API_KEY9, API_KEY9 ] // length 5
-    let keysArray = [ API_KEY1, API_KEY1, API_KEY1, API_KEY1, API_KEY1 ] // length 5
+    //let keysArray = [ API_KEY9, API_KEY9, API_KEY9, API_KEY9, API_KEY9 ] // ONLY FOR TEST
+    let keysArray = [ API_KEY1, API_KEY1, API_KEY1, API_KEY1, API_KEY1 ] // ONLY FOR TEST
     //let keysArray = [ API_KEY1, API_KEY2, API_KEY3, API_KEY4, API_KEY5 ] // length 5
 
     let j = 0
@@ -76,7 +76,6 @@ router.get('/recipes', async (req, res) => {
 router.delete('/delete', async (req, res) => {
   const { id, fd_tkn } = req.body; // food_token
   const { fd_ck_tkn } = req.cookies; // food_cookies_token
-  console.log("fd_tkn", fd_tkn, "fd_ck_tkn", fd_ck_tkn)
 
   try {
     if (fd_ck_tkn !== undefined && fd_tkn !== undefined && fd_ck_tkn !== fd_tkn) {
@@ -95,7 +94,6 @@ router.delete('/delete', async (req, res) => {
       }
     } else return res.status(400).json({ status: 400, message: `Invalid Credentials`, ok: false })
   } catch(err) {
-    //return res.status(400).json({'status': 400, 'error': e})
     return res.status(400).json({ status: 400, message: err, ok: false })
   }
 });
@@ -106,11 +104,6 @@ router.put('/recipe', async (req, res) => {
     dishes, diets, analyzedInstructions, fd_tkn // food_token
   } = req.body;
   const { fd_ck_tkn } = req.cookies; // food_cookies_token
-  console.log("fd_tkn", fd_tkn, "fd_ck_tkn", fd_ck_tkn)
-  console.log("EN PUT SERVER")
-  console.log("IMAGE", image === "")
-
-  //console.log("diets diets", diets)
 
   try {
     if (fd_ck_tkn && fd_tkn && fd_ck_tkn !== fd_tkn) {
@@ -119,7 +112,6 @@ router.put('/recipe', async (req, res) => {
     }
     else if (fd_ck_tkn !== undefined || fd_tkn !== undefined) {
       let checkUserResponse = await checkUser({ onlyCheck: true, res: res, fd_tkn: fd_tkn, fd_ck_tkn: fd_ck_tkn })
-      console.log("checkUserResponse.userValid", checkUserResponse.userValid)
       if (checkUserResponse.userValid) {
 
         if (image !== '') {
@@ -185,11 +177,6 @@ router.put('/recipe', async (req, res) => {
           return resultParsed
         })
 
-        //console.log("A VER", dishesFound)
-        //console.log("updatedItem", updatedItem[0])
-        //console.log("updatedItem 2", updatedItem)
-        //console.log("RELATED DISHES", relatedDishes)
-
         if (relatedDishes.length > 0) {
           relatedDishes.map(e => {
             if (e.toDelete) recipeFound.removeDishes(e.id)
@@ -225,11 +212,8 @@ router.put('/recipe', async (req, res) => {
               resultParsed.push({ id: dietsID, title: e, toDelete: false, toAdd: true }) // PUSH NEW !
             }
           })
-          console.log("A VER", dietsFound)
           return resultParsed
         })
-
-        console.log("relatedDiets", relatedDiets)
 
         if (relatedDiets.length > 0) {
           relatedDiets.map(e => {
@@ -238,7 +222,6 @@ router.put('/recipe', async (req, res) => {
           })
         }
 
-
         if (updatedItem[0] === 1) return res.status(200).json({ status: 200, message: `1 item updated`, ok: true })
       } else {
         res.clearCookie("fd_ck_tkn")
@@ -246,7 +229,6 @@ router.put('/recipe', async (req, res) => {
       }
     } else return res.status(400).json({ status: 400, message: `Invalid Credentials`, ok: false })
   } catch(err) {
-    //return res.status(400).json({'status': 400, 'error': e})
     return res.status(400).json({ status: 400, message: err, ok: false })
   }
 });
@@ -257,17 +239,8 @@ router.post('/recipe', async (req, res) => {
     dishes, diets, analyzedInstructions, fd_tkn
   } = req.body;
   const { fd_ck_tkn } = req.cookies;
-  console.log("email", email, "fd_tkn", fd_tkn, "fd_ck_tkn", fd_ck_tkn)
 
   try {
-    // if (
-    //   title.replaceAll(" ","").replaceAll("\n", "") === "" || // .replaceAll DON'T WORK IN SOME SERVERS !
-    //   healthScore === "" ||                                   // REPLACED WITH RegExp/g & .replace
-    //   summary.replaceAll(" ","").replaceAll("\n", "") === "" ||
-    //   dishes.length === 0 ||
-    //   diets.length === 0 ||
-    //   analyzedInstructions.map(e => e.replaceAll(" ","").replaceAll("\n","")).some(e => e === "")
-    // ) return res.status(400).json({'status': 400})
     if (
       title.replace(/ /g, "").replace(/\n/g, "") === "" ||
       healthScore === "" ||
@@ -325,7 +298,6 @@ router.post('/recipe', async (req, res) => {
       }
     }
   } catch(e) {
-    //res.status(400).json({'status': 400, 'error': e})
     return res.status(400).json({'status': 400, 'error': e})
   }
 });
@@ -375,11 +347,9 @@ router.get('/dishes', async (req, res) => { // THIS ROUTE ALWAYS RETURN DISHES.
       { title: "Dip" },
       { title: "Sauce" },
       { title: "Spread" }
-    //], { validate: true, updateOnDuplicate: ["title"] }))
     ], { validate: true }))
   }
   catch(e) {
-    //console.log("SOME ERRORRR")
     try {
       const dishes = await Dishes.findAll()
       if (dishes.length === 0) return res.status(400).send("No dishes")
@@ -393,14 +363,11 @@ router.get('/dishes', async (req, res) => { // THIS ROUTE ALWAYS RETURN DISHES.
 router.post('/user', async (req, res) => {
   const { email, fd_tkn, overwrite } = req.body;
   const { fd_ck_tkn } = req.cookies;
-  console.log("ENTRO EN POST USER email", email, "fd_tkn", fd_tkn, "fd_ck_tkn", fd_ck_tkn)
 
   try {
-    return await checkUser({ res, fd_ck_tkn, fd_tkn, overwrite })
-    //let response = await checkUser({ onlyCheck: false, res: res, fd_ck_tkn: fd_ck_tkn, fd_tkn: fd_tkn })
-    //console.log("RESPONSE", response)
+   return await checkUser({ res, fd_ck_tkn, fd_tkn, overwrite })
   } catch(err) {
-    //console.log("ERR", err)
+    console.log("ERR", err)
     if (err.response && err.response.data.error_description === 'Invalid Credentials') {
       res.clearCookie("fd_ck_tkn")
       return res.status(400).json({ status: 400, message: err.response.data.error_description, ok: false })
